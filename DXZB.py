@@ -154,7 +154,7 @@ resultxs = []
 error_channels = []
 
 for url in urls:
-    url_0 = str(base64.b64encode((f'"Server: udpxy" && city="{url}" && org="Chinanet"').encode("utf-8")), "utf-8")
+    url_0 = str(base64.b64encode((f'"Server: HTTP core server by Rozhuk" && city="{url}" && org="Chinanet"').encode("utf-8")), "utf-8")
     url_64 = f'https://fofa.info/result?qbase64={url_0}'
     print(url_64)
     try:
@@ -165,7 +165,7 @@ for url in urls:
         page_urls = re.findall(pattern, page_content)
         for urlx in page_urls:
             try:
-                response = requests.get(url=urlx + '/status', timeout=1)
+                response = requests.get(url=urlx + '/stat', timeout=1)
                 response.raise_for_status()  # 返回状态码不是200异常
                 page_content = response.text
                 pattern = r'class="proctabl"'
