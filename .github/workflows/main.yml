@@ -26,6 +26,9 @@ jobs:
       - name: Run ZB
         run: python ${{ github.workspace }}/bjltzb.py
 
+      - name: Run dxzb.py
+        run: python ${{ github.workspace }}/dxzb.py
+
       - name: 提交更改
         run: |
           git config --local user.email "luoyexp@163.com"
