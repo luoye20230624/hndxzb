@@ -24,7 +24,7 @@ jobs:
         run: pip install selenium requests futures eventlet pypinyin
               
       - name: Run ZB
-        run: python ${{ github.workspace }}/DXZB.py
+        run: python ${{ github.workspace }}/bjltzb.py
 
       - name: 提交更改
         run: |
