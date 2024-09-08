@@ -15,7 +15,7 @@ task_queue = Queue()
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'}
 
-urls = ["bejing"]
+urls = ["Beijing"]
 channelsx = [
    "CCTV-1 综合[高清],http://8.8.8.8:8/udp/udp/239.3.1.129:8008",
    "CCTV-2 财经[高清],http://8.8.8.8:8/udp/udp/239.3.1.60:8084",
