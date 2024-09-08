@@ -1,247 +1,103 @@
-import base64
-import re
 import requests
+import re
 import time
+import base64
 
-# 初始化
-urls = ["Beijing"]  # 替换为你实际的城市列表
-urls_all = set()
-results = []
-headers = {'User-Agent': 'Mozilla/5.0'}  # 设置请求头以避免被拒绝
-
-# 从 Fofa 查询 IP 地址
-for url in urls:
-    url_0 = str(base64.b64encode((f'"Rozhuk" && city="{url}" && org="China Unicom Beijing Province Network"').encode("utf-8")), "utf-8")
-    url_64 = f'https://fofa.info/result?qbase64={url_0}'
-    print(f'访问: {url_64}')
-    
+# 从fofa获取IP地址的函数
+def fetch_ips_from_fofa(query):
     try:
-        response = requests.get(url_64, headers=headers, timeout=15)
-        page_content = response.text
-        print(f"{url} 访问成功")
-        
-        # 查找 IP 地址
-        pattern = r'href="(http://\d+\.\d+\.\d+\.\d+:\d+)"'
-        page_urls = re.findall(pattern, page_content)
-        
-        for urlx in page_urls:
-            try:
-                response = requests.get(url=urlx + '/stat', timeout=1)
-                response.raise_for_status()
-                page_content = response.text
-                pattern = r'connections online'
-                page_proctabl = re.findall(pattern, page_content)
-                
-                if page_proctabl:
-                    urls_all.add(urlx)
-                    print(f"{urlx} 可以访问")
-            except requests.RequestException:
-                pass
-    except requests.RequestException:
-        print(f"{url_64} 访问失败")
+        # base64编码查询字符串
+        query_base64 = base64.b64encode(query.encode('utf-8')).decode('utf-8')
+        # 发送请求到 fofa 并获取结果
+        response = requests.get(f"https://fofa.info/result?qbase64={query_base64}", timeout=10)
+        # 正则表达式提取IP地址
+        ips = re.findall(r'(?:[0-9]{1,3}\.){3}[0-9]{1,3}:[0-9]+', response.text)
+        return ips
+    except Exception as e:
+        print(f"从fofa获取IP失败: {e}")
+        return []
 
-# 去重得到唯一的URL列表
-urls_all = list(urls_all)
+# 验证 URL 是否可以访问的函数
+def validate_stream(url):
+    try:
+        response = requests.get(url, timeout=5)
+        if response.status_code == 200:
+            return True
+        else:
+            return False
+    except Exception as e:
+        print(f"验证失败: {url}, 错误信息: {e}")
+        return False
 
-# 更新组播地址列表
-channelsx = [
-   "CCTV-1 综合[高清],http://8.8.8.8:8/udp/udp/239.3.1.129:8008",
-   "CCTV-2 财经[高清],http://8.8.8.8:8/udp/udp/239.3.1.60:8084",
-   "CCTV-3 综艺[高清],http://8.8.8.8:8/udp/udp/239.3.1.172:8001",
-   "CCTV-4 中文国际[高清],http://8.8.8.8:8/udp/udp/239.3.1.105:8092",
-   "CCTV-4 中文国际 欧洲[高清],http://8.8.8.8:8/udp/udp/239.3.1.213:4220",
-   "CCTV-4 中文国际 美洲[高清],http://8.8.8.8:8/udp/udp/239.3.1.214:4220",
-   "CCTV-5 体育[高清],http://8.8.8.8:8/udp/udp/239.3.1.173:8001",
-   "CCTV-5+ 体育赛事[高清],http://8.8.8.8:8/udp/udp/239.3.1.130:8004",
-   "CCTV-6 电影[高清],http://8.8.8.8:8/udp/udp/239.3.1.174:8001",
-   "CCTV-7 国防军事[高清],http://8.8.8.8:8/udp/udp/239.3.1.61:8104",
-   "CCTV-8 电视剧[高清],http://8.8.8.8:8/udp/udp/239.3.1.175:8001",
-   "CCTV-9 纪录[高清],http://8.8.8.8:8/udp/udp/239.3.1.62:8112",
-   "CCTV-10 科教[高清],http://8.8.8.8:8/udp/udp/239.3.1.63:8116",
-   "CCTV-11 戏曲[高清],http://8.8.8.8:8/udp/udp/239.3.1.152:8120",
-   "CCTV-12 社会与法[高清],http://8.8.8.8:8/udp/udp/239.3.1.64:8124",
-   "CCTV-13 新闻[高清],http://8.8.8.8:8/udp/udp/239.3.1.124:8128",
-   "CCTV-14 少儿[高清],http://8.8.8.8:8/udp/udp/239.3.1.65:8132",
-   "CCTV-15 音乐[高清],http://8.8.8.8:8/udp/udp/239.3.1.153:8136",
-   "CCTV-16 奥林匹克[超清HDR],http://8.8.8.8:8/udp/udp/239.3.1.183:8001",
-   "CCTV-16 奥林匹克[高清],http://8.8.8.8:8/udp/udp/239.3.1.184:8001",
-   "CCTV-17 农业农村[高清],http://8.8.8.8:8/udp/udp/239.3.1.151:8144",
-   "CCTV-4K 超高清[超清HDR],http://8.8.8.8:8/udp/udp/239.3.1.245:2000",
-   "湖南卫视[高清],http://8.8.8.8:8/udp/udp/239.3.1.132:8012",
-   "东方卫视[高清],http://8.8.8.8:8/udp/udp/239.3.1.136:8032",
-   "浙江卫视[高清],http://8.8.8.8:8/udp/udp/239.3.1.137:8036",
-   "江苏卫视[高清],http://8.8.8.8:8/udp/udp/239.3.1.135:8028",
-   "深圳卫视[高清],http://8.8.8.8:8/udp/udp/239.3.1.134:8020",
-   "广东卫视[高清],http://8.8.8.8:8/udp/udp/239.3.1.142:8048",
-   "安徽卫视[高清],http://8.8.8.8:8/udp/udp/239.3.1.211:8064",
-   "天津卫视[高清],http://8.8.8.8:8/udp/udp/239.3.1.141:1234",
-   "重庆卫视[高清],http://8.8.8.8:8/udp/udp/239.3.1.122:8160",
-   "山东卫视[高清],http://8.8.8.8:8/udp/udp/239.3.1.209:8052",
-   "黑龙江卫视[高清],http://8.8.8.8:8/udp/udp/239.3.1.133:8016",
-   "河北卫视[高清],http://8.8.8.8:8/udp/udp/239.3.1.148:8072",
-   "辽宁卫视[高清],http://8.8.8.8:8/udp/udp/239.3.1.210:8056",
-   "湖北卫视[高清],http://8.8.8.8:8/udp/udp/239.3.1.138:8044",
-   "吉林卫视[高清],http://8.8.8.8:8/udp/udp/239.3.1.240:8172",
-   "贵州卫视[高清],http://8.8.8.8:8/udp/udp/239.3.1.149:8076",
-   "东南卫视[高清],http://8.8.8.8:8/udp/udp/239.3.1.156:8148",
-   "江西卫视[高清],http://8.8.8.8:8/udp/udp/239.3.1.123:8164",
-   "海南卫视,http://8.8.8.8:8/udp/udp/239.3.1.45:8304",
-   "云南卫视,http://8.8.8.8:8/udp/udp/239.3.1.26:8108",
-   "兵团卫视,http://8.8.8.8:8/udp/udp/239.3.1.144:4120",
-   "厦门卫视,http://8.8.8.8:8/udp/udp/239.3.1.143:4120",
-   "四川卫视,http://8.8.8.8:8/udp/udp/239.3.1.29:8288",
-   "大湾区卫视,http://8.8.8.8:8/udp/udp/239.3.1.161:8001",
-   "宁夏卫视,http://8.8.8.8:8/udp/udp/239.3.1.46:8124",
-   "山西卫视,http://8.8.8.8:8/udp/udp/239.3.1.42:8172",
-   "广西卫视,http://8.8.8.8:8/udp/udp/239.3.1.39:8300",
-   "新疆卫视,http://8.8.8.8:8/udp/udp/239.3.1.48:8160",
-   "河南卫视,http://8.8.8.8:8/udp/udp/239.3.1.27:8128",
-   "甘肃卫视,http://8.8.8.8:8/udp/udp/239.3.1.49:8188",
-   "西藏卫视,http://8.8.8.8:8/udp/udp/239.3.1.47:8164",
-   "三沙卫视,http://8.8.8.8:8/udp/udp/239.3.1.155:4120",
-   "陕西卫视,http://8.8.8.8:8/udp/udp/239.3.1.41:8140",
-   "青海卫视,http://8.8.8.8:8/udp/udp/239.3.1.44:8184",
-   "内蒙古卫视,http://8.8.8.8:8/udp/udp/239.3.1.43:8176",
-   "BRTV北京卫视[高清],http://8.8.8.8:8/udp/udp/239.3.1.241:8000",
-   "BRTV新闻[高清],http://8.8.8.8:8/udp/udp/239.3.1.159:8000",
-   "BRTV影视[高清],http://8.8.8.8:8/udp/udp/239.3.1.158:8000",
-   "BRTV文艺[高清],http://8.8.8.8:8/udp/udp/239.3.1.242:8000",
-   "BRTV财经[高清],http://8.8.8.8:8/udp/udp/239.3.1.116:8000",
-   "BRTV生活[高清],http://8.8.8.8:8/udp/udp/239.3.1.117:8000",
-   "BRTV青年[高清],http://8.8.8.8:8/udp/udp/239.3.1.118:8000",
-   "BRTV纪实科教[高清],http://8.8.8.8:8/udp/udp/239.3.1.115:8000",
-   "BRTV卡酷少儿[高清],http://8.8.8.8:8/udp/udp/239.3.1.189:8000",
-   "BRTV冬奥纪实[高清],http://8.8.8.8:8/udp/udp/239.3.1.243:8000",
-   "BRTV冬奥纪实[超清HDR],http://8.8.8.8:8/udp/udp/239.3.1.120:8000",
-   "BRTV冬奥纪实[超清],http://8.8.8.8:8/udp/udp/239.3.1.121:8000",
-   "BRTV体育休闲[高清],http://8.8.8.8:8/udp/udp/239.3.1.243:8000",
-   "BRTV国际频道[高清],http://8.8.8.8:8/udp/udp/239.3.1.235:8000",
-   "爱上4K[超清],http://8.8.8.8:8/udp/udp/239.3.1.236:2000",
-   "4K超清[超清],http://8.8.8.8:8/udp/udp/239.3.1.249:8001",
-   "淘电影[高清],http://8.8.8.8:8/udp/udp/239.3.1.250:8001",
-   "每日影院[高清],http://8.8.8.8:8/udp/udp/239.3.1.111:8001",
-   "星影,http://8.8.8.8:8/udp/udp/239.3.1.94:4120",
-   "动作影院,http://8.8.8.8:8/udp/udp/239.3.1.92:4120",
-   "光影,http://8.8.8.8:8/udp/udp/239.3.1.84:4120",
-   "喜剧影院,http://8.8.8.8:8/udp/udp/239.3.1.91:4120",
-   "家庭影院,http://8.8.8.8:8/udp/udp/239.3.1.93:4120",
-   "精选,http://8.8.8.8:8/udp/udp/239.3.1.74:4120",
-   "经典电影,http://8.8.8.8:8/udp/udp/239.3.1.195:9024",
-   "纪实人文[高清],http://8.8.8.8:8/udp/udp/239.3.1.212:8060",
-   "金鹰纪实[高清],http://8.8.8.8:8/udp/udp/239.3.1.58:8156",
-   "乐游[高清],http://8.8.8.8:8/udp/udp/239.3.1.207:8001",
-   "风尚生活[高清],http://8.8.8.8:8/udp/udp/239.3.1.114:8001",
-   "地理,http://8.8.8.8:8/udp/udp/239.3.1.71:4120",
-   "淘剧场[高清],http://8.8.8.8:8/udp/udp/239.3.1.95:8001",
-   "幸福剧场[高清],http://8.8.8.8:8/udp/udp/239.3.1.112:8001",
-   "都市剧场[高清],http://8.8.8.8:8/udp/udp/239.3.1.203:8001",
-   "淘娱乐[高清],http://8.8.8.8:8/udp/udp/239.3.1.100:8001",
-   "幸福娱乐[高清],http://8.8.8.8:8/udp/udp/239.3.1.113:8001",
-   "淘Baby[高清],http://8.8.8.8:8/udp/udp/239.3.1.238:8001",
-   "萌宠TV[高清],http://8.8.8.8:8/udp/udp/239.3.1.102:8001",
-   "动漫秀场[高清],http://8.8.8.8:8/udp/udp/239.3.1.202:8001",
-   "中国交通[高清],http://8.8.8.8:8/udp/udp/239.3.1.188:8001",
-   "朝阳融媒[高清],http://8.8.8.8:8/udp/udp/239.3.1.163:8001",
-   "通州融媒[高清],http://8.8.8.8:8/udp/udp/239.3.1.221:8001",
-   "密云电视台[高清],http://8.8.8.8:8/udp/udp/239.3.1.154:8001",
-   "房山电视台[高清],http://8.8.8.8:8/udp/udp/239.3.1.96:8001",
-   "延庆电视台,http://8.8.8.8:8/udp/udp/239.3.1.187:8001",
-   "法治天地[高清],http://8.8.8.8:8/udp/udp/239.3.1.204:8001",
-   "CGTN 新闻[高清],http://8.8.8.8:8/udp/udp/239.3.1.215:4220",
-   "CGTN 记录[高清],http://8.8.8.8:8/udp/udp/239.3.1.216:4220",
-   "CGTN 西班牙语[高清],http://8.8.8.8:8/udp/udp/239.3.1.217:4220",
-   "CGTN 法语[高清],http://8.8.8.8:8/udp/udp/239.3.1.218:4220",
-   "CGTN 阿拉伯语[高清],http://8.8.8.8:8/udp/udp/239.3.1.219:4220",
-   "CGTN 俄语[高清],http://8.8.8.8:8/udp/udp/239.3.1.220:4220",
-   "睛彩竞技[高清],http://8.8.8.8:8/udp/udp/239.3.1.125:8001",
-   "睛彩篮球[高清],http://8.8.8.8:8/udp/udp/239.3.1.126:8001",
-   "睛彩羽毛球[高清],http://8.8.8.8:8/udp/udp/239.3.1.127:8001",
-   "睛彩广场舞[高清],http://8.8.8.8:8/udp/udp/239.3.1.128:8001",
-   "魅力足球[高清],http://8.8.8.8:8/udp/udp/239.3.1.201:8001",
-   "茶频道[高清],http://8.8.8.8:8/udp/udp/239.3.1.165:8001",
-   "淘精彩[高清],http://8.8.8.8:8/udp/udp/239.3.1.178:8001",
-   "快乐垂钓[高清],http://8.8.8.8:8/udp/udp/239.3.1.164:8001",
-   "生活时尚[高清],http://8.8.8.8:8/udp/udp/239.3.1.206:8001",
-   "游戏风云[高清],http://8.8.8.8:8/udp/udp/239.3.1.205:8001",
-   "金色学堂[高清],http://8.8.8.8:8/udp/udp/239.3.1.208:8001",
-   "CETV1[高清],http://8.8.8.8:8/udp/udp/239.3.1.57:8152",
-   "CETV2,http://8.8.8.8:8/udp/udp/239.3.1.54:4120",
-   "CETV3,http://8.8.8.8:8/udp/udp/239.3.1.55:4120",
-   "CETV4,http://8.8.8.8:8/udp/udp/239.3.1.56:4120",
-   "少儿动画,http://8.8.8.8:8/udp/udp/239.3.1.199:9000",
-   "热播剧场,http://8.8.8.8:8/udp/udp/239.3.1.194:9020",
-   "解密,http://8.8.8.8:8/udp/udp/239.3.1.75:4120",
-   "军事,http://8.8.8.8:8/udp/udp/239.3.1.76:4120",
-   "军旅剧场,http://8.8.8.8:8/udp/udp/239.3.1.68:4120",
-   "动画,http://8.8.8.8:8/udp/udp/239.3.1.80:4120",
-   "古装剧场,http://8.8.8.8:8/udp/udp/239.3.1.69:4120",
-   "嘉佳卡通,http://8.8.8.8:8/udp/udp/239.3.1.147:9268",
-   "国学,http://8.8.8.8:8/udp/udp/239.3.1.77:4120",
-   "城市剧场,http://8.8.8.8:8/udp/udp/239.3.1.67:4120",
-   "墨宝,http://8.8.8.8:8/udp/udp/239.3.1.83:4120",
-   "好学生,http://8.8.8.8:8/udp/udp/239.3.1.81:4120",
-   "山东教育,http://8.8.8.8:8/udp/udp/239.3.1.52:4120",
-   "戏曲,http://8.8.8.8:8/udp/udp/239.3.1.78:4120",
-   "早教,http://8.8.8.8:8/udp/udp/239.3.1.79:4120",
-   "武侠剧场,http://8.8.8.8:8/udp/udp/239.3.1.90:4120",
-   "武术,http://8.8.8.8:8/udp/udp/239.3.1.87:4120",
-   "爱生活,http://8.8.8.8:8/udp/udp/239.3.1.86:4120",
-   "美人,http://8.8.8.8:8/udp/udp/239.3.1.73:4120",
-   "美妆,http://8.8.8.8:8/udp/udp/239.3.1.72:4120",
-   "财富天下,http://8.8.8.8:8/udp/udp/239.3.1.53:9136",
-   "足球,http://8.8.8.8:8/udp/udp/239.3.1.89:4120",
-   "金鹰卡通,http://8.8.8.8:8/udp/udp/239.3.1.51:9252",
-   "鉴赏,http://8.8.8.8:8/udp/udp/239.3.1.82:4120",
-   "音乐现场,http://8.8.8.8:8/udp/udp/239.3.1.70:4120",
-   "魅力时尚,http://8.8.8.8:8/udp/udp/239.3.1.196:9012",
-]
-
-# 测试每个组播地址的速度并记录结果
+# 测试 URL 响应速度的函数
 def test_speed(url):
     try:
         start_time = time.time()
-        response = requests.get(url, timeout=10)
-        end_time = time.time()
-        return end_time - start_time
-    except requests.RequestException:
+        response = requests.get(url, timeout=5)
+        if response.status_code == 200:
+            end_time = time.time()
+            return end_time - start_time
+        else:
+            return float('inf')
+    except Exception as e:
+        print(f"测速失败: {url}, 错误信息: {e}")
         return float('inf')
 
-# 验证视频流是否可播放
-def validate_stream(url):
-    try:
-        # 这里尝试下载视频流的一部分数据来验证流的可用性
-        response = requests.get(url, timeout=10, stream=True)
-        if response.status_code == 200:
-            # 读取前几秒的数据（假设流的数据能被读取）
-            data = response.raw.read(1024 * 1024)  # 读取1MB的数据
-            if len(data) > 0:
-                return True
-        return False
-    except requests.RequestException:
-        return False
+# 更新组播地址列表
+def update_channel_list(ips):
+    with open("channels.txt", 'r', encoding='utf-8') as file:
+        channelsx = file.readlines()
+    
+    results = []
 
-# 替换 IP 地址并进行测速
-for urlx in urls_all:
-    # 对 channelsx 中的每一行进行处理
-    for line in channelsx:
-        try:
-            name, url = line.strip().split(',')
-            # 替换 IP 地址
-            url = url.replace("http://8.8.8.8:8", urlx)
-            
-            if validate_stream(url):
-                speed = test_speed(url)
-                results.append((name, url, speed))
-        except ValueError:
-            # 如果解包出错，则跳过该行
-            print(f"跳过格式错误的行: {line}")
-            continue
+    for ip in ips:
+        for line in channelsx:
+            try:
+                name, url = line.strip().split(',')
+                url = url.replace("http://8.8.8.8:8", f"http://{ip}")
+                
+                print(f"验证 URL: {url}")  # 调试信息
+                
+                if validate_stream(url):
+                    speed = test_speed(url)
+                    print(f"测速结果: {speed} 秒")  # 调试信息
+                    results.append((name, url, speed))
+                else:
+                    print(f"验证不通过: {url}")  # 调试信息
+            except ValueError:
+                print(f"跳过格式错误的行: {line}")
+                continue
 
-# 按速度排序并选择前3个
-fastest_channels = sorted(results, key=lambda x: x[2])[:3]
+    return results
 
-# 写入文件
-with open("bjlt.txt", 'w', encoding='utf-8') as file:
-    for name, url, _ in fastest_channels:
-        file.write(f"{name},{url}\n")
-        print(f"{name},{url}")
+# 主要流程
+
+# 定义FOFA查询字符串
+query = '"Rozhuk" && region="Beijing" && org="China Unicom Beijing Province Network"'
+
+# 从fofa获取IP地址
+ips = fetch_ips_from_fofa(query)
+
+if not ips:
+    print("未能获取到任何IP地址。")
+else:
+    # 更新组播地址列表并验证可用性
+    results = update_channel_list(ips)
+
+    # 检查验证通过的结果
+    print(f"验证通过的结果: {results}")  # 调试信息
+
+    if results:
+        # 按速度排序并选择最快的3个
+        fastest_channels = sorted(results, key=lambda x: x[2])[:3]
+
+        # 检查排序后的最快频道
+        print(f"最快的频道: {fastest_channels}")  # 调试信息
+
+        # 将最快的3个频道写入文件
+        with open("bjlt.txt", 'w', encoding='utf-8') as file:
+            for name, url, _ in fastest_channels:
+                file.write(f"{name},{url}\n")
+                print(f"写入文件: {name},{url}")  # 调试信息
+    else:
+        print("没有找到任何可用的频道。")
