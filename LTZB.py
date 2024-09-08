@@ -4,48 +4,46 @@ import requests
 import time
 
 # 初始化
-cities = ["Beijing"]  # 替换为你实际的城市列表
+urls = ["Beijing"]  # 替换为你实际的城市列表
 urls_all = set()
+results = []
 headers = {'User-Agent': 'Mozilla/5.0'}  # 设置请求头以避免被拒绝
 
 # 从 Fofa 查询 IP 地址
-for city in cities:
-    query = f'"Rozhuk" && city="{city}" && org="China Unicom Beijing Province Network"'
-    query_encoded = base64.b64encode(query.encode("utf-8")).decode("utf-8")
-    url_fofa = f'https://fofa.info/result?qbase64={query_encoded}'
-    print(f'访问: {url_fofa}')
+for url in urls:
+    url_0 = str(base64.b64encode((f'"Rozhuk" && city="{url}" && org="China Unicom Beijing Province Network"').encode("utf-8")), "utf-8")
+    url_64 = f'https://fofa.info/result?qbase64={url_0}'
+    print(f'访问: {url_64}')
     
     try:
-        response = requests.get(url_fofa, headers=headers, timeout=15)
+        response = requests.get(url_64, headers=headers, timeout=15)
         page_content = response.text
-        print(f"{city} 访问成功")
+        print(f"{url} 访问成功")
         
         # 查找 IP 地址
-        ip_pattern = r'href="(http://\d+\.\d+\.\d+\.\d+:\d+)"'
-        found_urls = re.findall(ip_pattern, page_content)
+        pattern = r'href="(http://\d+\.\d+\.\d+\.\d+:\d+)"'
+        page_urls = re.findall(pattern, page_content)
         
-        for url in found_urls:
+        for urlx in page_urls:
             try:
-                start_time = time.time()
-                response = requests.get(url + '/stat', timeout=1)
+                response = requests.get(url=urlx + '/stat', timeout=1)
                 response.raise_for_status()
-                end_time = time.time()
-                response_time = end_time - start_time
+                page_content = response.text
+                pattern = r'connections online'
+                page_proctabl = re.findall(pattern, page_content)
                 
-                stat_content = response.text
-                if 'connections online' in stat_content:
-                    urls_all.add((url, response_time))
-                    print(f"{url} 可以访问，响应时间: {response_time:.2f} 秒")
+                if page_proctabl:
+                    urls_all.add(urlx)
+                    print(f"{urlx} 可以访问")
             except requests.RequestException:
                 pass
     except requests.RequestException:
-        print(f"{url_fofa} 访问失败")
+        print(f"{url_64} 访问失败")
 
-# 根据响应速度排序，并选择前3个
-urls_all_sorted = sorted(urls_all, key=lambda x: x[1])
-top_3_urls = [url for url, _ in urls_all_sorted[:3]]
+# 去重得到唯一的URL列表
+urls_all = list(urls_all)
 
-# 原始组播地址列表
+# 更新组播地址列表
 channelsx = [
    "CCTV-1 综合[高清],http://8.8.8.8:8/udp/udp/239.3.1.129:8008",
    "CCTV-2 财经[高清],http://8.8.8.8:8/udp/udp/239.3.1.60:8084",
@@ -198,20 +196,43 @@ channelsx = [
    "魅力时尚,http://8.8.8.8:8/udp/udp/239.3.1.196:9012",
 ]
 
-# 根据查询结果更新频道列表
-updated_channels = []
-for url in top_3_urls:
-    for channel in channelsx:
-        updated_channel = channel.replace("http://8.8.8.8:8", url)
-        updated_channels.append(updated_channel)
+# 测试每个组播地址的速度并记录结果
+def test_speed(url):
+    try:
+        start_time = time.time()
+        response = requests.get(url, timeout=10)
+        end_time = time.time()
+        return end_time - start_time
+    except requests.RequestException:
+        return float('inf')
 
-# 输出更新后的频道列表
-for channel in updated_channels:
-    print(channel)
+# 验证视频流是否可播放
+def validate_stream(url):
+    try:
+        # 这里尝试下载视频流的一部分数据来验证流的可用性
+        response = requests.get(url, timeout=10, stream=True)
+        if response.status_code == 200:
+            # 读取前几秒的数据（假设流的数据能被读取）
+            data = response.raw.read(1024 * 1024)  # 读取1MB的数据
+            if len(data) > 0:
+                return True
+        return False
+    except requests.RequestException:
+        return False
 
-# 可以将更新后的频道列表保存到文件中
-with open("updated_channels.txt", "w", encoding="utf-8") as f:
-    for channel in updated_channels:
-        f.write(channel + "\n")
+# 替换 IP 地址并进行测速
+for urlx in urls_all:
+    channel = [f'{name},{url.replace("http://8.8.8.8:8", urlx)}' for name, url in [line.strip().split(',') for line in channelsx]]
+    for name, url in channel:
+        if validate_stream(url):
+            speed = test_speed(url)
+            results.append((name, url, speed))
 
-print("频道列表已更新并保存到 updated_channels.txt")
+# 按速度排序并选择前3个
+fastest_channels = sorted(results, key=lambda x: x[2])[:3]
+
+# 写入文件
+with open("bjlt.txt", 'w', encoding='utf-8') as file:
+    for name, url, _ in fastest_channels:
+        file.write(f"{name},{url}\n")
+        print(f"{name},{url}")
