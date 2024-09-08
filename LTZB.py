@@ -176,7 +176,7 @@ resultxs = []
 error_channels = []
 
 for url in urls:
-   url_0 = str(base64.b64encode((f'server="HTTP core server by Rozhuk" && region="{url}" && org="China Unicom Beijing Province Network"').encode("utf-8")), "utf-8")
+    url_0 = str(base64.b64encode((f'server="HTTP core server by Rozhuk" && region="{url}" && org="China Unicom Beijing Province Network"').encode("utf-8")), "utf-8")
     url_64 = f'https://fofa.info/result?qbase64={url_0}'
     print(url_64)
     try:
