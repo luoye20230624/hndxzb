@@ -1,21 +1,48 @@
-import time
-import os
-import re
 import base64
-import datetime
+import re
 import requests
-import threading
-from queue import Queue
-from datetime import datetime
 
+# 初始化
+urls = ["Beijing"]  # 替换为你实际的城市列表
+urls_all = set()
+results = []
+headers = {'User-Agent': 'Mozilla/5.0'}  # 设置请求头以避免被拒绝
 
-# 线程安全的队列，用于存储下载任务
-task_queue = Queue()
+# 从 Fofa 查询 IP 地址
+for url in urls:
+    url_0 = str(base64.b64encode((f'"Rozhuk" && city="{url}" && org="China Unicom Beijing Province Network"').encode("utf-8")), "utf-8")
+    url_64 = f'https://fofa.info/result?qbase64={url_0}'
+    print(f'访问: {url_64}')
+    
+    try:
+        response = requests.get(url_64, headers=headers, timeout=15)
+        page_content = response.text
+        print(f"{url} 访问成功")
+        
+        # 查找 IP 地址
+        pattern = r'href="(http://\d+\.\d+\.\d+\.\d+:\d+)"'
+        page_urls = re.findall(pattern, page_content)
+        
+        for urlx in page_urls:
+            try:
+                response = requests.get(url=urlx + '/stat', timeout=1)
+                response.raise_for_status()
+                page_content = response.text
+                pattern = r'connections online'
+                page_proctabl = re.findall(pattern, page_content)
+                
+                if page_proctabl:
+                    urls_all.add(urlx)
+                    print(f"{urlx} 可以访问")
+            except requests.RequestException:
+                pass
+    except requests.RequestException:
+        print(f"{url_64} 访问失败")
 
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'}
+# 去重得到唯一的URL列表
+urls_all = list(urls_all)
 
-urls = ["bejing"]
+# 更新组播地址列表
 channelsx = [
    "CCTV-1 综合[高清],http://8.8.8.8:8/udp/udp/239.3.1.129:8008",
    "CCTV-2 财经[高清],http://8.8.8.8:8/udp/udp/239.3.1.60:8084",
@@ -166,54 +193,8 @@ channelsx = [
    "鉴赏,http://8.8.8.8:8/udp/udp/239.3.1.82:4120",
    "音乐现场,http://8.8.8.8:8/udp/udp/239.3.1.70:4120",
    "魅力时尚,http://8.8.8.8:8/udp/udp/239.3.1.196:9012",
+    # 这里可以加入更多的组播地址模板
 ]
-
-results = []
-channel = []
-urls_all = []
-resultsx = []
-resultxs = []
-error_channels = []
-
-for url in urls:
-   url_0 = str(base64.b64encode((f'server="HTTP core server by Rozhuk" && region="{url}" && org="China Unicom Beijing Province Network"').encode("utf-8")), "utf-8")
-    url_64 = f'https://fofa.info/result?qbase64={url_0}'
-    print(url_64)
-    try:
-        response = requests.get(url_64, headers=headers, timeout=15)
-        page_content = response.text
-        print(f" {url}  访问成功")
-        pattern = r'href="(http://\d+\.\d+\.\d+\.\d+:\d+)"'
-        page_urls = re.findall(pattern, page_content)
-        for urlx in page_urls:
-            try:
-                response = requests.get(url=urlx + '/stat', timeout=1)
-                response.raise_for_status()  # 返回状态码不是200异常
-                page_content = response.text
-                pattern = r'connections online'
-                page_proctabl = re.findall(pattern, page_content)
-                if page_proctabl:
-                    urls_all.append(urlx)
-                    print(f"{urlx} 可以访问")
-
-            except requests.RequestException as e:
-                pass
-    except:
-        print(f"{url_64} 访问失败")
-        pass
-
-urls_all = set(urls_all)  # 去重得到唯一的URL列表
-for urlx in urls_all:
-    channel = [f'{name},{url.replace("http://8.8.8.8:8", urlx)}' for name, url in
-               [line.strip().split(',') for line in channelsx]]
-    results.extend(channel)
-
-results = sorted(results)
-# with open("itv.txt", 'w', encoding='utf-8') as file:
-#     for result in results:
-#         file.write(result + "\n")
-#         print(result)
-
 
 # 测试每个组播地址的速度并记录结果
 def test_speed(url):
@@ -235,52 +216,8 @@ for urlx in urls_all:
 # 按速度排序并选择前3个
 fastest_channels = sorted(results, key=lambda x: x[2])[:3]
 
-
-for resulta in resultsx:
-    channel_name, channel_url = resulta
-    resultx = channel_name, channel_url
-    resultxs.append(resultx)
-
-# 对频道进行排序
-resultxs.sort(key=lambda x: channel_key(x[0]))
-
-result_counter = 10  # 每个频道需要的个数
-
+# 写入文件
 with open("bjlt.txt", 'w', encoding='utf-8') as file:
-    channel_counters = {}
-    file.write('央视频道,#genre#\n')
-    for result in resultxs:
-        channel_name, channel_url = result
-        if 'CCTV' in channel_name:
-            if channel_name in channel_counters:
-                if channel_counters[channel_name] >= result_counter:
-                    continue
-                else:
-                    file.write(f"{channel_name},{channel_url}\n")
-                    channel_counters[channel_name] += 1
-            else:
-                file.write(f"{channel_name},{channel_url}\n")
-                channel_counters[channel_name] = 1
-    channel_counters = {}
-    file.write('\n卫视频道,#genre#\n')
-    for result in resultxs:
-        channel_name, channel_url = result
-        if '卫视' in channel_name or '凤凰' in channel_name or 'CHC' in channel_name:
-            if channel_name in channel_counters:
-                if channel_counters[channel_name] >= result_counter:
-                    continue
-                else:
-                    file.write(f"{channel_name},{channel_url}\n")
-                    channel_counters[channel_name] += 1
-            else:
-                file.write(f"{channel_name},{channel_url}\n")
-                channel_counters[channel_name] = 1
-
-
-    # 写入更新日期时间
-    now = datetime.now()
-    file.write(f"\n更新时间,#genre#\n")
-    file.write(f"{now.strftime("%Y-%m-%d")},url\n")
-    file.write(f"{now.strftime("%H:%M:%S")},url\n")
-
-print(f"电视频道成功写入bjlt.txt")
+    for name, url, _ in fastest_channels:
+        file.write(f"{name},{url}\n")
+        print(f"{name},{url}")
