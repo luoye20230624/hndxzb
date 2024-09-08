@@ -15,7 +15,7 @@ task_queue = Queue()
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'}
 
-urls = ["bejing"]
+urls = ["Beijing"]
 channelsx = [
    "CCTV-1 综合[高清],http://8.8.8.8:8/udp/udp/239.3.1.129:8008",
    "CCTV-2 财经[高清],http://8.8.8.8:8/udp/udp/239.3.1.60:8084",
@@ -176,7 +176,7 @@ resultxs = []
 error_channels = []
 
 for url in urls:
-    url_0 = str(base64.b64encode((f'server="Rozhuk" && region="{url}" && org="China Unicom Beijing Province Network"').encode("utf-8")), "utf-8")
+    url_0 = str(base64.b64encode((f'server="HTTP core server by Rozhuk" && region="{url}" && org="China Unicom Beijing Province Network"').encode("utf-8")), "utf-8")
     url_64 = f'https://fofa.info/result?qbase64={url_0}'
     print(url_64)
     try:
