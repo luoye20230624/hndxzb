@@ -222,11 +222,20 @@ def validate_stream(url):
 
 # 替换 IP 地址并进行测速
 for urlx in urls_all:
-    channel = [f'{name},{url.replace("http://8.8.8.8:8", urlx)}' for name, url in [line.strip().split(',') for line in channelsx]]
-    for name, url in channel:
-        if validate_stream(url):
-            speed = test_speed(url)
-            results.append((name, url, speed))
+    # 对 channelsx 中的每一行进行处理
+    for line in channelsx:
+        try:
+            name, url = line.strip().split(',')
+            # 替换 IP 地址
+            url = url.replace("http://8.8.8.8:8", urlx)
+            
+            if validate_stream(url):
+                speed = test_speed(url)
+                results.append((name, url, speed))
+        except ValueError:
+            # 如果解包出错，则跳过该行
+            print(f"跳过格式错误的行: {line}")
+            continue
 
 # 按速度排序并选择前3个
 fastest_channels = sorted(results, key=lambda x: x[2])[:3]
