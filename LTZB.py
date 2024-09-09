@@ -1,4 +1,5 @@
 import requests
+import base64  # 添加这个导入语句
 import json
 import time
 
