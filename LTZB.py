@@ -213,25 +213,26 @@ results = sorted(results)
 def worker():
     while True:
         result = task_queue.get()
+        if result is None:
+            break  # 退出线程循环
         channel_name, channel_url = result.split(',', 1)
         try:
             response = requests.get(channel_url, stream=True, timeout=3)
             if response.status_code == 200:
-                result = channel_name, channel_url
                 resultsx.append(result)
                 numberx = (len(resultsx) + len(error_channels)) / len(results) * 100
                 print(
-                    f"可用频道：{len(resultsx)} , 不可用频道：{len(error_channels)} 个 , 总频道：{len(results)} 个 ,总进度：{numberx:.2f} %。")
+                    f"可用频道：{len(resultsx)} , 不可用频道：{len(error_channels)} 个 , 总频道：{len(results)} 个 , 总进度：{numberx:.2f} %。")
             else:
                 error_channels.append(result)
                 numberx = (len(resultsx) + len(error_channels)) / len(results) * 100
                 print(
-                    f"可用频道：{len(resultsx)} 个 , 不可用频道：{len(error_channels)} , 总频道：{len(results)} 个 ,总进度：{numberx:.2f} %。")
+                    f"可用频道：{len(resultsx)} 个 , 不可用频道：{len(error_channels)} , 总频道：{len(results)} 个 , 总进度：{numberx:.2f} %。")
         except:
             error_channels.append(result)
             numberx = (len(resultsx) + len(error_channels)) / len(results) * 100
             print(
-                f"可用频道：{len(resultsx)} 个 , 不可用频道：{len(error_channels)} 个 , 总频道：{len(results)} 个 ,总进度：{numberx:.2f} %。")
+                f"可用频道：{len(resultsx)} 个 , 不可用频道：{len(error_channels)} 个 , 总频道：{len(results)} 个 , 总进度：{numberx:.2f} %。")
 
         # 标记任务完成
         task_queue.task_done()
