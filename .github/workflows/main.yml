@@ -2,7 +2,7 @@ name: zb
 
 on:
   schedule:
-    - cron: '0 06,20 * * *'
+    - cron: '0 */4 * * *'  # 每四个小时的第 0 分钟运行
   push:
     branches:
       - main
