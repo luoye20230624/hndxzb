@@ -213,28 +213,40 @@ results = sorted(results)
 def worker():
     while True:
         result = task_queue.get()
+        if result is None:
+            break  # 终止线程的信号
+
         channel_name, channel_url = result.split(',', 1)
         try:
-            response = requests.get(channel_url, stream=True, timeout=3)
-            if response.status_code == 200:
-                result = channel_name, channel_url
-                resultsx.append(result)
-                numberx = (len(resultsx) + len(error_channels)) / len(results) * 100
-                print(
-                    f"可用频道：{len(resultsx)} , 不可用频道：{len(error_channels)} 个 , 总频道：{len(results)} 个 ,总进度：{numberx:.2f} %。")
-            else:
-                error_channels.append(result)
-                numberx = (len(resultsx) + len(error_channels)) / len(results) * 100
-                print(
-                    f"可用频道：{len(resultsx)} 个 , 不可用频道：{len(error_channels)} , 总频道：{len(results)} 个 ,总进度：{numberx:.2f} %。")
-        except:
+            # 尝试用 OpenCV 打开视频流
+            cap = cv2.VideoCapture(channel_url)
+            
+            # 等待一段时间以确保视频流可以开始
+            if not cap.isOpened():
+                raise Exception("无法打开视频流")
+            
+            # 尝试读取视频流的第一帧
+            ret, frame = cap.read()
+            if not ret:
+                raise Exception("无法读取视频流")
+
+            # 如果成功读取到帧，说明视频流有效
+            result = channel_name, channel_url
+            resultsx.append(result)
+            cap.release()
+            
+            numberx = (len(resultsx) + len(error_channels)) / len(results) * 100
+            print(f"可用频道：{len(resultsx)} , 不可用频道：{len(error_channels)} 个 , 总频道：{len(results)} 个 , 总进度：{numberx:.2f} %。")
+        
+        except Exception as e:
+            # 如果出现任何错误，记录到错误频道列表中
             error_channels.append(result)
             numberx = (len(resultsx) + len(error_channels)) / len(results) * 100
-            print(
-                f"可用频道：{len(resultsx)} 个 , 不可用频道：{len(error_channels)} 个 , 总频道：{len(results)} 个 ,总进度：{numberx:.2f} %。")
+            print(f"可用频道：{len(resultsx)} 个 , 不可用频道：{len(error_channels)} 个 , 总频道：{len(results)} 个 , 总进度：{numberx:.2f} %。")
 
-        # 标记任务完成
-        task_queue.task_done()
+        finally:
+            # 确保任务完成标记被调用
+            task_queue.task_done()
 
 
 # 创建多个工作线程
