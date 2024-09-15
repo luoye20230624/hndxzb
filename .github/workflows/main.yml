@@ -19,7 +19,12 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: '3.12'  # 你可以根据需要指定版本
-              
+
+      - name: Install dependencies
+        run: |
+          pip install opencv-python requests
+          # 添加其他需要的包
+          
       - name: Run ZB
         run: python ${{ github.workspace }}/LTZB.py
               
