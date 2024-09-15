@@ -4,6 +4,8 @@ import re
 import base64
 import datetime
 import requests
+import cv2  # OpenCV库，用于视频流检测
+import numpy as np
 import threading
 from queue import Queue
 from datetime import datetime
