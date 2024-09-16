@@ -26,10 +26,7 @@ jobs:
           # 添加其他需要的包
           
       - name: Run ZB
-        run: python ${{ github.workspace }}/LTZB.py
-              
-      - name: Run ZB
-        run: python ${{ github.workspace }}/DXZB.py
+        run: python ${{ github.workspace }}/zb.py
 
       - name: 提交更改
         run: |
