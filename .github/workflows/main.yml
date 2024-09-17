@@ -6,6 +6,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - '*.txt'  # 仅当有 .txt 文件变化时触发
 
 jobs:
   build:
@@ -18,7 +20,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
-          python-version: '3.12'  # 你可以根据需要指定版本
+          python-version: '3.12'
 
       - name: Install dependencies
         run: |
@@ -26,14 +28,13 @@ jobs:
           # 添加其他需要的包
           
       - name: Run ZB
-        run: python ${{ github.workspace }}/ZB.py
+        run: python ${{ github.workspace }}/DXZB.py
 
       - name: 提交更改
         run: |
           git config --local user.email "luoyexp@163.com"
           git config --local user.name "luoye20230624"
+          git pull --rebase origin main  # 确保获取最新的 main 分支
           git add .
-          git commit *.txt -m "Add generated file"
-          # git commit *.m3u -m "Add generated file"
-          #git pull --rebase
+          git commit -m "Add generated file" || echo "No changes to commit"
           git push -f
