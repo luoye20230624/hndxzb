@@ -28,11 +28,14 @@ jobs:
       - name: Run ZB
         run: python ${{ github.workspace }}/ZB.py
 
-    - name: 提交更改
-      run: |
-        cd $GITHUB_WORKSPACE
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add .
-        git commit -m "Update results"
-        git push
+      - name: Commit results
+        run: |
+            git config --local user.email "actions@github.com"
+            git config --local user.name "GitHub Action"
+            if [ -n "$(git status --porcelain)" ]; then
+            git add  *.txt #*.m3u
+            git commit -m "Automatic update"
+            git push
+            else
+              echo "No changes detected, skipping commit."
+            fi
