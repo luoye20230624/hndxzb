@@ -28,12 +28,10 @@ jobs:
       - name: Run ZB
         run: python ${{ github.workspace }}/ZB.py
 
-      - name: 提交更改
-        run: |
-          git config --local user.email "luoyexp@163.com"
-          git config --local user.name "hndxzb"
-          git add .
-          git commit *.txt -m "Add generated file"
-          # git commit *.m3u -m "Add generated file"
-          #git pull --rebase
-          git push -f
+    - name: 提交更改
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .
+        git commit -m "Update results"
+        git push
