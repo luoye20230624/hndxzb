@@ -3,11 +3,9 @@ name: zb
 on:
   schedule:
     - cron: '0 */4 * * *'  # 每四个小时的第 0 分钟运行
-  push:
-    branches:
+  workflow_dispatch:
+    分支:
       - main
-    paths:
-      - '*.txt'  # 仅当有 .txt 文件变化时触发
 
 jobs:
   build:
@@ -28,11 +26,11 @@ jobs:
           # 添加其他需要的包
           
       - name: Run ZB
-        run: python ${{ github.workspace }}/DXZB.py
+        run: python ${{ github.workspace }}/ZB.py
 
       - name: 提交更改
         run: |
-          git config --local user.email "actions@126.com"
+          git config --local user.email "luoyexp@163.com"
           git config --local user.name "GitHub Action"
           git add .
           git commit *.txt -m "Add generated file"
