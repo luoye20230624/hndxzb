@@ -159,15 +159,22 @@ def fetch_urls(url):
 def check_channel(url):
     """检查视频流的有效性"""
     try:
+        print(f"正在检查频道: {url}")  # 添加调试输出
         cap = cv2.VideoCapture(url)
         if not cap.isOpened():
+            print(f"无法打开视频流: {url}")
             return None
         
         # 尝试读取第一帧
         ret, frame = cap.read()
         cap.release()
+        if ret:
+            print(f"频道有效: {url}")
+        else:
+            print(f"频道无效: {url}")
         return url if ret else None
-    except Exception:
+    except Exception as e:
+        print(f"发生错误: {e}")
         return None
 
 def worker(url):
@@ -180,6 +187,7 @@ def worker(url):
         cctv1_url = "http://8.8.8.8:8/udp/239.76.245.51:1234".replace("http://8.8.8.8:8", urlx)
         if check_channel(cctv1_url):
             valid_ips.append(urlx)  # 如果CCTV1有效，将此IP记录为有效
+            print(f"找到有效IP: {urlx}")
             break  # 一旦找到一个有效IP，停止进一步检查
     
     return valid_ips
@@ -192,6 +200,10 @@ def main():
         future_to_url = {executor.submit(worker, url): url for url in urls}
         for future in as_completed(future_to_url):
             result = future.result()
+            if result:
+                print(f"有效IP: {result}")
+            else:
+                print("没有找到有效IP")
             valid_ips.update(result)  # 更新有效IP
 
     results = []
@@ -237,10 +249,7 @@ def main():
         for result in resultxs:
             channel_name, channel_url = result
             if '湖南' in channel_name or '长沙' in channel_name or '金鹰' in channel_name or '娄底' in channel_name or '常德' \
-                      in channel_name or '张家界' in channel_name or '怀化' in channel_name or '浏阳' in channel_name or '湘西' \
-                      in channel_name or '衡阳' in channel_name or '邵阳' in channel_name or '郴州' in channel_name or '岳阳' in channel_name or '溆浦' \
-                      in channel_name or '武冈' in channel_name or '新化' in channel_name or '津市' in channel_name or '桂东' in channel_name \
-                     or '道县' in channel_name or '永州' in channel_name or '株洲' in channel_name or '湘潭' in channel_name or '益阳' in channel_name:
+                    in channel_name or '张家界' in channel_name or '怀化' in channel_name或 '浏阳' in channel_name:
                 if channel_counters.get(channel_name, 0) < 10:
                     file.write(f"{channel_name},{channel_url}\n")
                     channel_counters[channel_name] = channel_counters.get(channel_name, 0) + 1
