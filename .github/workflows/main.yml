@@ -32,9 +32,10 @@ jobs:
 
       - name: 提交更改
         run: |
-          git config --local user.email "luoyexp@163.com"
-          git config --local user.name "luoye20230624"
-          git pull --rebase origin main  # 确保获取最新的 main 分支
+          git config --local user.email "actions@126.com"
+          git config --local user.name "GitHub Action"
           git add .
-          git commit -m "Add generated file" || echo "No changes to commit"
+          git commit *.txt -m "Add generated file"
+          git commit *.m3u -m "Add generated file"
+          #git pull --rebase
           git push -f
