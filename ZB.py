@@ -171,23 +171,33 @@ def check_channel(url):
         return None
 
 def worker(url):
-    """工作线程：获取URL并检查有效性"""
+    """工作线程：获取URL并只检查CCTV1频道的有效性"""
     urls_found = fetch_urls(url)
-    return [check_channel(urlx) for urlx in urls_found]
+    valid_ips = []
+
+    for urlx in urls_found:
+        # 只检查CCTV1的有效性
+        cctv1_url = "http://8.8.8.8:8/udp/239.76.245.51:1234".replace("http://8.8.8.8:8", urlx)
+        if check_channel(cctv1_url):
+            valid_ips.append(urlx)  # 如果CCTV1有效，将此IP记录为有效
+            break  # 一旦找到一个有效IP，停止进一步检查
+    
+    return valid_ips
 
 def main():
-    urls_all = set()
+    valid_ips = set()
 
     # 使用ThreadPoolExecutor来并行处理请求
     with ThreadPoolExecutor(max_workers=20) as executor:
         future_to_url = {executor.submit(worker, url): url for url in urls}
         for future in as_completed(future_to_url):
             result = future.result()
-            urls_all.update(filter(None, result))  # 去除None
+            valid_ips.update(result)  # 更新有效IP
 
     results = []
-    for urlx in urls_all:
-        channel = [f'{name},{url.replace("http://8.8.8.8:8", urlx)}' for name, url in
+    for ip in valid_ips:
+        # 假设所有频道在这个IP地址下都是有效的，将IP替换到所有频道中
+        channel = [f'{name},{url.replace("http://8.8.8.8:8", ip)}' for name, url in
                    [line.strip().split(',') for line in channelsx]]
         results.extend(channel)
 
@@ -196,12 +206,13 @@ def main():
     resultxs = []
     error_channels = []
 
-    for channel_url in results:
-        channel_name, channel_url = channel_url.split(',', 1)
-        if check_channel(channel_url):
+    for channel_info in results:
+        try:
+            channel_name, channel_url = channel_info.split(',', 1)
             resultxs.append((channel_name, channel_url))
-        else:
-            error_channels.append(channel_url)
+        except ValueError as ve:
+            print(f"跳过无效的频道数据: {channel_info} - 错误: {ve}")
+            continue
 
     # 写入有效的频道到文件
     with open("iptv_list.txt", 'w', encoding='utf-8') as file:
@@ -225,11 +236,8 @@ def main():
         file.write('\n湖南频道,#genre#\n')
         for result in resultxs:
             channel_name, channel_url = result
-        if '湖南' in channel_name or '长沙' in channel_name or '金鹰' in channel_name or '娄底' in channel_name or '常德' \
-                in channel_name or '张家界' in channel_name or '怀化' in channel_name or '浏阳' in channel_name or '湘西' \
-                in channel_name or '衡阳' in channel_name or '邵阳' in channel_name or '郴州' in channel_name or '岳阳' in channel_name or '溆浦' \
-                in channel_name or '武冈' in channel_name or '新化' in channel_name or '津市' in channel_name or '桂东' in channel_name \
-                or '道县' in channel_name or '永州' in channel_name or '株洲' in channel_name or '湘潭' in channel_name or '益阳' in channel_name:
+            if '湖南' in channel_name or '长沙' in channel_name or '金鹰' in channel_name or '娄底' in channel_name or '常德' \
+                    in channel_name or '张家界' in channel_name or '怀化' in channel_name或 '浏阳' 在channel_name:
                 if channel_counters.get(channel_name, 0) < 10:
                     file.write(f"{channel_name},{channel_url}\n")
                     channel_counters[channel_name] = channel_counters.get(channel_name, 0) + 1
