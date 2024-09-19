@@ -1,18 +1,25 @@
 import time
+import os
 import re
 import base64
+import datetime
 import requests
 import cv2  # OpenCV库，用于视频流检测
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import numpy as np
+import threading
+from queue import Queue
+from datetime import datetime
 
-# 请求头
+# 线程安全的队列，用于存储下载任务
+task_queue = Queue()
+
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'}
 
-urls = ["Hunan"]
-
-channelsx = [  # 频道列表
-     "湖南卫视,http://8.8.8.8:8/udp/239.76.245.115:1234", "湖南经视,http://8.8.8.8:8/udp/239.76.245.116:1234",
+urls = ["changsha", "zhuzhou", "xiangtan", "hengyang", "shaoyang", "yueyang", "changde", "zhangjiajie", "yiyang",
+        "chenzhou", "yongzhou", "huaihua", "loudi"]
+channelsx = [
+    "湖南卫视,http://8.8.8.8:8/udp/239.76.245.115:1234", "湖南经视,http://8.8.8.8:8/udp/239.76.245.116:1234",
     "湖南都市,http://8.8.8.8:8/udp/239.76.245.117:1234", "湖南电视剧,http://8.8.8.8:8/udp/239.76.245.118:1234",
     "湖南电影,http://8.8.8.8:8/udp/239.76.245.119:1234", "湖南娱乐,http://8.8.8.8:8/udp/239.76.245.121:1234",
     "湖南国际,http://8.8.8.8:8/udp/239.76.245.124:1234", "湖南公共,http://8.8.8.8:8/udp/239.76.245.123:1234",
@@ -141,21 +148,55 @@ channelsx = [  # 频道列表
     "岳阳公共,http://8.8.8.8:8/udp/239.76.255.8:9000",
 ]
 
-def fetch_urls(url):
-    """获取指定城市的可用URL列表"""
-    url_0 = str(base64.b64encode((f'"Rozhuk" && region="{url}" && org="Chinanet"').encode("utf-8")), "utf-8")
+results = []
+channel = []
+urls_all = []
+resultsx = []
+resultxs = []
+error_channels = []
+
+for url in urls:
+    url_0 = str(base64.b64encode((f'"Rozhuk" && city="{url}" && org="Chinanet"').encode("utf-8")), "utf-8")
     url_64 = f'https://fofa.info/result?qbase64={url_0}'
-    
+    print(url_64)
     try:
         response = requests.get(url_64, headers=headers, timeout=15)
-        response.raise_for_status()  # 确保响应状态为200
         page_content = response.text
+        print(f" {url}  访问成功")
         pattern = r'href="(http://\d+\.\d+\.\d+\.\d+:\d+)"'
-        return re.findall(pattern, page_content)
-    except Exception as e:
-        print(f"{url_64} 访问失败: {e}")
-        return []
+        page_urls = re.findall(pattern, page_content)
+        for urlx in page_urls:
+            try:
+                response = requests.get(url=urlx + '/stat', timeout=1)
+                response.raise_for_status()  # 返回状态码不是200异常
+                page_content = response.text
+                pattern = r'connections online'
+                page_proctabl = re.findall(pattern, page_content)
+                if page_proctabl:
+                    urls_all.append(urlx)
+                    print(f"{urlx} 可以访问")
 
+            except requests.RequestException as e:
+                pass
+    except:
+        print(f"{url_64} 访问失败")
+        pass
+
+urls_all = set(urls_all)  # 去重得到唯一的URL列表
+for urlx in urls_all:
+    channel = [f'{name},{url.replace("http://8.8.8.8:8", urlx)}' for name, url in
+               [line.strip().split(',') for line in channelsx]]
+    results.extend(channel)
+
+results = sorted(results)
+
+
+# with open("itv.txt", 'w', encoding='utf-8') as file:
+#     for result in results:
+#         file.write(result + "\n")
+#         print(result)
+
+# 定义工作线程函数
 def check_channel(url):
     """检查视频流的有效性"""
     try:
@@ -192,70 +233,83 @@ def worker(url):
     
     return valid_ips
 
-def main():
-    valid_ips = set()
 
-    # 使用ThreadPoolExecutor来并行处理请求
-    with ThreadPoolExecutor(max_workers=20) as executor:
-        future_to_url = {executor.submit(worker, url): url for url in urls}
-        for future in as_completed(future_to_url):
-            result = future.result()
-            if result:
-                print(f"有效IP: {result}")
+# 创建多个工作线程
+num_threads = 20
+for _ in range(num_threads):
+    t = threading.Thread(target=worker, daemon=True)
+    t.start()
+
+# 添加下载任务到队列
+for result in results:
+    task_queue.put(result)
+
+# 等待所有任务完成
+task_queue.join()
+
+
+def channel_key(channel_name):
+    match = re.search(r'\d+', channel_name)
+    if match:
+        return int(match.group())
+    else:
+        return float('inf')  # 返回一个无穷大的数字作为关键字
+
+
+for resulta in resultsx:
+    channel_name, channel_url = resulta
+    resultx = channel_name, channel_url
+    resultxs.append(resultx)
+
+# 对频道进行排序
+resultxs.sort(key=lambda x: channel_key(x[0]))
+
+result_counter = 10  # 每个频道需要的个数
+
+with open("iptv_list.txt", 'w', encoding='utf-8') as file:
+    channel_counters = {}
+    file.write('央视频道,#genre#\n')
+    for result in resultxs:
+        channel_name, channel_url = result
+        if 'CCTV' in channel_name:
+            if channel_name in channel_counters:
+                if channel_counters[channel_name] >= result_counter:
+                    continue
+                else:
+                    file.write(f"{channel_name},{channel_url}\n")
+                    channel_counters[channel_name] += 1
             else:
-                print("没有找到有效IP")
-            valid_ips.update(result)  # 更新有效IP
-
-    results = []
-    for ip in valid_ips:
-        # 假设所有频道在这个IP地址下都是有效的，将IP替换到所有频道中
-        channel = [f'{name},{url.replace("http://8.8.8.8:8", ip)}' for name, url in
-                   [line.strip().split(',') for line in channelsx]]
-        results.extend(channel)
-
-    results = sorted(set(results))  # 去重和排序
-
-    resultxs = []
-    error_channels = []
-
-    for channel_info in results:
-        try:
-            channel_name, channel_url = channel_info.split(',', 1)
-            resultxs.append((channel_name, channel_url))
-        except ValueError as ve:
-            print(f"跳过无效的频道数据: {channel_info} - 错误: {ve}")
-            continue
-
-    # 写入有效的频道到文件
-    with open("iptv_list.txt", 'w', encoding='utf-8') as file:
-        channel_counters = {}
-        file.write('央视频道,#genre#\n')
-        for result in resultxs:
-            channel_name, channel_url = result
-            if 'CCTV' in channel_name:
-                if channel_counters.get(channel_name, 0) < 10:
+                file.write(f"{channel_name},{channel_url}\n")
+                channel_counters[channel_name] = 1
+    channel_counters = {}
+    file.write('\n卫视频道,#genre#\n')
+    for result in resultxs:
+        channel_name, channel_url = result
+        if '卫视' in channel_name or '凤凰' in channel_name or 'CHC' in channel_name:
+            if channel_name in channel_counters:
+                if channel_counters[channel_name] >= result_counter:
+                    continue
+                else:
                     file.write(f"{channel_name},{channel_url}\n")
-                    channel_counters[channel_name] = channel_counters.get(channel_name, 0) + 1
-        
-        file.write('\n卫视频道,#genre#\n')
-        for result in resultxs:
-            channel_name, channel_url = result
-            if '卫视' in channel_name or '凤凰' in channel_name or 'CHC' in channel_name:
-                if channel_counters.get(channel_name, 0) < 10:
+                    channel_counters[channel_name] += 1
+            else:
+                file.write(f"{channel_name},{channel_url}\n")
+                channel_counters[channel_name] = 1
+    channel_counters = {}
+    file.write('\n湖南频道,#genre#\n')
+    for result in resultxs:
+        channel_name, channel_url = result
+        if '湖南' in channel_name or '长沙' in channel_name or '金鹰' in channel_name or '娄底' in channel_name or '常德' \
+                in channel_name or '张家界' in channel_name or '怀化' in channel_name or '浏阳' in channel_name or '湘西' \
+                in channel_name or '衡阳' in channel_name or '邵阳' in channel_name or '郴州' in channel_name or '岳阳' in channel_name or '溆浦' \
+                in channel_name or '武冈' in channel_name or '新化' in channel_name or '津市' in channel_name or '桂东' in channel_name \
+                or '道县' in channel_name or '永州' in channel_name or '株洲' in channel_name or '湘潭' in channel_name or '益阳' in channel_name:
+            if channel_name in channel_counters:
+                if channel_counters[channel_name] >= result_counter:
+                    continue
+                else:
                     file.write(f"{channel_name},{channel_url}\n")
-                    channel_counters[channel_name] = channel_counters.get(channel_name, 0) + 1
-        
-        file.write('\n湖南频道,#genre#\n')
-        for result in resultxs:
-            channel_name, channel_url = result
-            if '湖南' in channel_name or '长沙' in channel_name or '金鹰' in channel_name or '娄底' in channel_name or '常德' \
-                    in channel_name or '张家界' in channel_name or '怀化' in channel_name or '浏阳' in channel_name or '湘西' \
-                    in channel_name or '衡阳' in channel_name or '邵阳' in channel_name or '郴州' in channel_name or '岳阳' in channel_name or '溆浦' \
-                    in channel_name or '武冈' in channel_name or '新化' in channel_name or '津市' in channel_name or '桂东' in channel_name \
-                    or '道县' in channel_name or '永州' in channel_name or '株洲' in channel_name or '湘潭' in channel_name or '益阳' in channel_name:
-                if channel_counters.get(channel_name, 0) < 10:
-                    file.write(f"{channel_name},{channel_url}\n")
-                    channel_counters[channel_name] = channel_counters.get(channel_name, 0) + 1
-
-if __name__ == "__main__":
-    main()
+                    channel_counters[channel_name] += 1
+            else:
+                file.write(f"{channel_name},{channel_url}\n")
+                channel_counters[channel_name] = 1
