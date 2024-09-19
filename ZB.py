@@ -240,7 +240,7 @@ def main():
         file.write('\n卫视频道,#genre#\n')
         for result in resultxs:
             channel_name, channel_url = result
-            if '卫视' in channel_name or '凤凰' in channel_name或 'CHC' in channel_name:
+            if '卫视' in channel_name or '凤凰' in channel_name or 'CHC' in channel_name:
                 if channel_counters.get(channel_name, 0) < 10:
                     file.write(f"{channel_name},{channel_url}\n")
                     channel_counters[channel_name] = channel_counters.get(channel_name, 0) + 1
