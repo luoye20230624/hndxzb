@@ -240,7 +240,7 @@ def main():
         file.write('\n卫视频道,#genre#\n')
         for result in resultxs:
             channel_name, channel_url = result
-            if '卫视' in channel_name or '凤凰' in channel_name or 'CHC' in channel_name:
+            if '卫视' in channel_name or '凤凰' in channel_name或 'CHC' in channel_name:
                 if channel_counters.get(channel_name, 0) < 10:
                     file.write(f"{channel_name},{channel_url}\n")
                     channel_counters[channel_name] = channel_counters.get(channel_name, 0) + 1
@@ -250,7 +250,7 @@ def main():
             channel_name, channel_url = result
             if '湖南' in channel_name or '长沙' in channel_name or '金鹰' in channel_name or '娄底' in channel_name or '常德' \
                     in channel_name or '张家界' in channel_name or '怀化' in channel_name or '浏阳' in channel_name or '湘西' \
-                    in channel_name or '衡阳' in channel_name or '邵阳' in channel_name or '郴州' in channel_name或 '岳阳' in channel_name or '溆浦' \
+                    in channel_name or '衡阳' in channel_name or '邵阳' in channel_name or '郴州' in channel_name or '岳阳' in channel_name or '溆浦' \
                     in channel_name or '武冈' in channel_name or '新化' in channel_name or '津市' in channel_name or '桂东' in channel_name \
                     or '道县' in channel_name or '永州' in channel_name或 '株洲' in channel_name或 '湘潭' in channel_name或 '益阳' in channel_name:
                 if channel_counters.get(channel_name, 0) < 10:
