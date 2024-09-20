@@ -1,315 +1,516 @@
-import time
 import os
+import requests
 import re
 import base64
+import cv2
 import datetime
+from datetime import datetime
+from bs4 import BeautifulSoup
+from urllib.parse import urlparse
+# 获取rtp目录下的文件名
+files = os.listdir('rtp')
+
+files_name = []
+
+# 去除后缀名并保存至provinces_isps
+for file in files:
+    name, extension = os.path.splitext(file)
+    files_name.append(name)
+
+#忽略不符合要求的文件名
+provinces_isps = [name for name in files_name if name.count('_') == 1]
+
+# 打印结果
+print(f"本次查询：{provinces_isps}的组播节目") 
+
+keywords = []
+
+for province_isp in provinces_isps:
+    # 读取文件并删除空白行
+    try:
+        with open(f'rtp/{province_isp}.txt', 'r', encoding='utf-8') as file:
+            lines = file.readlines()
+            lines = [line.strip() for line in lines if line.strip()]
+        # 获取第一行中以包含 "rtp://" 的值作为 mcast
+        if lines:
+            first_line = lines[0]
+            if "rtp://" in first_line:
+                mcast = first_line.split("rtp://")[1].split(" ")[0]
+                keywords.append(province_isp + "_" + mcast)
+    except FileNotFoundError:
+    # 如果文件不存在，则捕获 FileNotFoundError 异常并打印提示信息
+        print(f"文件 '{province_isp}.txt' 不存在. 跳过此文件.")
+
+for keyword in keywords:
+    province, isp, mcast = keyword.split("_")
+    #将省份转成英文小写
+    # 根据不同的 isp 设置不同的 org 值
+    if province == "北京" and isp == "联通":
+        isp_en = "cucc"
+        org = "China Unicom Beijing Province Network"
+    elif isp == "联通":
+        isp_en = "cucc"
+        org = "CHINA UNICOM China169 Backbone"
+    elif isp == "电信":
+        org = "Chinanet"
+        isp_en = "ctcc"
+    elif isp == "移动":
+        org == "China Mobile communications corporation"
+        isp_en = "cmcc"
+        
+#    else:
+#        org = ""
+
+    current_time = datetime.now()
+    timeout_cnt = 0
+    result_urls = set() 
+    while len(result_urls) == 0 and timeout_cnt <= 5:
+        try:
+            search_url = 'https://fofa.info/result?qbase64='
+            search_txt = f'\"Rozhuk\" && country=\"CN\" && region=\"{province}\"'
+           # search_txt = f'\"Rozhuk\" && country=\"CN\" && region=\"{province}\" && org=\"{org}\"'
+                # 将字符串编码为字节流
+            bytes_string = search_txt.encode('utf-8')
+                # 使用 base64 进行编码
+            search_txt = base64.b64encode(bytes_string).decode('utf-8')
+            search_url += search_txt
+            print(f"{current_time} 查询运营商 : {province}{isp} ，查询网址 : {search_url}")
+            response = requests.get(search_url, timeout=30)
+            # 处理响应
+            response.raise_for_status()
+            # 检查请求是否成功
+            html_content = response.text
+            # 使用BeautifulSoup解析网页内容
+            html_soup = BeautifulSoup(html_content, "html.parser")
+            # print(f"{current_time} html_content:{html_content}")
+            # 查找所有符合指定格式的网址
+            # 设置匹配的格式，如http://8.8.8.8:8888
+            pattern = r"http://\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d+"
+            urls_all = re.findall(pattern, html_content)
+            # 去重得到唯一的URL列表
+            result_urls = set(urls_all)
+            print(f"{current_time} result_urls:{result_urls}")
+
+            valid_ips = []
+
+            # 遍历所有视频链接
+            for url in result_urls:
+                video_url = url + "/rtp/" + mcast
+
+                # 用OpenCV读取视频
+                cap = cv2.VideoCapture(video_url)
+
+                # 检查视频是否成功打开
+                if not cap.isOpened():
+                    print(f"{current_time} {video_url} 无效")
+                else:
+                    # 读取视频的宽度和高度
+                    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                    print(f"{current_time} {video_url} 的分辨率为 {width}x{height}")
+                    # 检查分辨率是否大于0
+                    if width > 0 and height > 0:
+                        valid_ips.append(url)
+                    # 关闭视频流
+                    cap.release()
+                    
+            if valid_ips:
+                #生成节目列表 省份运营商.txt
+                rtp_filename = f'rtp/{province}_{isp}.txt'
+                with open(rtp_filename, 'r', encoding='utf-8') as file:
+                    data = file.read()
+                txt_filename = f'{province}{isp}.txt'
+                with open(txt_filename, 'w') as new_file:
+                    for url in valid_ips:
+                        new_data = data.replace("rtp://", f"{url}/rtp/")
+                        new_file.write(new_data)
+
+                print(f'已生成播放列表，保存至{txt_filename}')
+ 
+
+            else:
+                print("未找到合适的 IP 地址。")
+
+        except (requests.Timeout, requests.RequestException) as e:
+            timeout_cnt += 1
+            print(f"{current_time} [{province}]搜索请求发生超时，异常次数：{timeout_cnt}")
+            if timeout_cnt <= 5:
+                    # 继续下一次循环迭代
+                continue
+            else:
+                print(f"{current_time} 搜索IPTV频道源[]，超时次数过多：{timeout_cnt} 次，停止处理")
+print('节目表制作完成！ 文件输出在当前文件夹！')
+
+# 合并自定义频道文件#################################################################################################
+import time
+import concurrent.futures
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 import requests
-import cv2  # OpenCV库，用于视频流检测
-import numpy as np
+import re
+import os
 import threading
 from queue import Queue
 from datetime import datetime
+import replace
+import fileinput
+from opencc import OpenCC
+file_contents = []
+file_paths = ["北京联通.txt", "江苏电信.txt", "天津联通.txt", "湖南移动.txt",  "湖南电信.txt", "陕西电信.txt", "四川电信.txt", "河南电信.txt", "河南联通.txt"]  # 替换为实际的文件路径列表
+for file_path in file_paths:
+    if os.path.exists(file_path):
+        with open(file_path, 'r', encoding="utf-8") as file:
+            content = file.read()
+            file_contents.append(content)
+    else:                # 如果文件不存在，则提示异常并打印提示信息
+        print(f"文件 {file_path} 不存在，跳过")
+# 写入合并后的文件
+with open("iptv_list.txt", "w", encoding="utf-8") as output:
+    output.write('\n'.join(file_contents))
 
-# 线程安全的队列，用于存储下载任务
-task_queue = Queue()
-
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'}
-
-urls = ["changsha", "zhuzhou", "xiangtan", "hengyang", "shaoyang", "yueyang", "changde", "zhangjiajie", "yiyang",
-        "chenzhou", "yongzhou", "huaihua", "loudi"]
-channelsx = [
-    "湖南卫视,http://8.8.8.8:8/udp/239.76.245.115:1234", "湖南经视,http://8.8.8.8:8/udp/239.76.245.116:1234",
-    "湖南都市,http://8.8.8.8:8/udp/239.76.245.117:1234", "湖南电视剧,http://8.8.8.8:8/udp/239.76.245.118:1234",
-    "湖南电影,http://8.8.8.8:8/udp/239.76.245.119:1234", "湖南娱乐,http://8.8.8.8:8/udp/239.76.245.121:1234",
-    "湖南国际,http://8.8.8.8:8/udp/239.76.245.124:1234", "湖南公共,http://8.8.8.8:8/udp/239.76.245.123:1234",
-    "CCTV1,http://8.8.8.8:8/udp/239.76.245.51:1234", "CCTV1,http://8.8.8.8:8/udp/239.76.246.151:1234",
-    "CCTV2,http://8.8.8.8:8/udp/239.76.246.152:1234", "CCTV3,http://8.8.8.8:8/udp/239.76.246.153:1234",
-    "CCTV4,http://8.8.8.8:8/udp/239.76.245.195:1234", "CCTV4,http://8.8.8.8:8/udp/239.76.246.154:1234",
-    "CCTV5,http://8.8.8.8:8/udp/239.76.246.155:1234", "CCTV5+,http://8.8.8.8:8/udp/239.76.246.168:1234",
-    "CCTV6,http://8.8.8.8:8/udp/239.76.246.156:1234", "CCTV7,http://8.8.8.8:8/udp/239.76.246.157:1234",
-    "CCTV8,http://8.8.8.8:8/udp/239.76.246.158:1234", "CCTV9,http://8.8.8.8:8/udp/239.76.246.159:1234",
-    "CCTV10,http://8.8.8.8:8/udp/239.76.246.160:1234", "CCTV11,http://8.8.8.8:8/udp/239.76.245.251:1234",
-    "CCTV12,http://8.8.8.8:8/udp/239.76.246.162:1234", "CCTV13,http://8.8.8.8:8/udp/239.76.246.93:1234",
-    "CCTV14,http://8.8.8.8:8/udp/239.76.246.164:1234", "CCTV15,http://8.8.8.8:8/udp/239.76.245.252:1234",
-    "CCTV16,http://8.8.8.8:8/udp/239.76.246.98:1234", "CCTV17,http://8.8.8.8:8/udp/239.76.245.238:1234",
-    "CCTV 4K,http://8.8.8.8:8/udp/239.76.246.214:1234", "CCTV16 4k,http://8.8.8.8:8/udp/239.76.246.224:1234",
-    "CCTV16 4k,http://8.8.8.8:8/udp/239.76.246.230:1234", "体育,http://8.8.8.8:8/udp/239.76.246.136:1234",
-    "金鹰卡通,http://8.8.8.8:8/udp/239.76.245.120:1234", "金鹰纪实,http://8.8.8.8:8/udp/239.76.245.122:1234",
-    "快乐垂钓,http://8.8.8.8:8/udp/239.76.245.127:1234", "湖南教育,http://8.8.8.8:8/udp/239.76.245.233:1234",
-    "茶频道,http://8.8.8.8:8/udp/239.76.245.239:1234", "广东卫视,http://8.8.8.8:8/udp/239.76.245.189:1234",
-    "东南卫视,http://8.8.8.8:8/udp/239.76.245.190:1234", "安徽卫视,http://8.8.8.8:8/udp/239.76.245.196:1234",
-    "辽宁卫视,http://8.8.8.8:8/udp/239.76.245.197:1234", "江西卫视,http://8.8.8.8:8/udp/239.76.245.225:1234",
-    "河北卫视,http://8.8.8.8:8/udp/239.76.245.199:1234", "贵州卫视,http://8.8.8.8:8/udp/239.76.245.198:1234",
-    "江苏卫视,http://8.8.8.8:8/udp/239.76.246.181:1234", "东方卫视,http://8.8.8.8:8/udp/239.76.246.186:1234",
-    "浙江卫视,http://8.8.8.8:8/udp/239.76.246.182:1234", "北京卫视,http://8.8.8.8:8/udp/239.76.246.184:1234",
-    "天津卫视,http://8.8.8.8:8/udp/239.76.246.185:1234", "深圳卫视,http://8.8.8.8:8/udp/239.76.246.188:1234",
-    "湖北卫视,http://8.8.8.8:8/udp/239.76.246.193:1234", "山东卫视,http://8.8.8.8:8/udp/239.76.246.195:1234",
-    "黑龙江卫视,http://8.8.8.8:8/udp/239.76.246.200:1234", "吉林卫视,http://8.8.8.8:8/udp/239.76.246.201:1234",
-    "河南卫视,http://8.8.8.8:8/udp/239.76.246.202:1234", "海南卫视,http://8.8.8.8:8/udp/239.76.246.203:1234",
-    "四川卫视,http://8.8.8.8:8/udp/239.76.246.91:1234", "重庆卫视,http://8.8.8.8:8/udp/239.76.246.92:1234",
-    "甘肃卫视,http://8.8.8.8:8/udp/239.76.246.94:1234", "中国教育,http://8.8.8.8:8/udp/239.76.245.192:1234",
-    "长沙女姓,http://8.8.8.8:8/udp/239.76.245.23:1234", "长沙影视,http://8.8.8.8:8/udp/239.76.245.204:1234",
-    "湘西综合,http://8.8.8.8:8/udp/239.76.245.208:1234", "湘西综合,http://8.8.8.8:8/udp/239.76.245.209:1234",
-    "河南梨园,http://8.8.8.8:8/udp/239.76.245.179:1234", "武术世界,http://8.8.8.8:8/udp/239.76.245.181:1234",
-    "张家界,http://8.8.8.8:8/udp/239.76.245.235:1234", "张家界综合,http://8.8.8.8:8/udp/239.76.245.234:1234",
-    "CHC动作电影,http://8.8.8.8:8/udp/239.76.245.243:1234", "CHC高清电影,http://8.8.8.8:8/udp/239.76.245.242:1234",
-    "CHC家庭影院,http://8.8.8.8:8/udp/239.76.245.241:1234", "快乐垂钓,http://8.8.8.8:8/udp/239.76.246.5:1234",
-    "凤凰资讯,http://8.8.8.8:8/udp/239.76.246.8:1234", "凤凰中文,http://8.8.8.8:8/udp/239.76.246.7:1234",
-    "湖南卫视,http://8.8.8.8:8/udp/239.76.246.101:1234", "湖南卫视,http://8.8.8.8:8/udp/239.76.246.100:1234",
-    "湖南经视,http://8.8.8.8:8/udp/239.76.246.103:1234", "湖南国际,http://8.8.8.8:8/udp/239.76.246.102:1234",
-    "湖南都市,http://8.8.8.8:8/udp/239.76.246.104:1234", "湖南娱乐,http://8.8.8.8:8/udp/239.76.246.105:1234",
-    "湖南电影,http://8.8.8.8:8/udp/239.76.246.106:1234", "湖南公共,http://8.8.8.8:8/udp/239.76.246.109:1234",
-    "湖南电视剧,http://8.8.8.8:8/udp/239.76.246.108:1234", "金鹰卡通,http://8.8.8.8:8/udp/239.76.246.107:1234",
-    "金鹰纪实,http://8.8.8.8:8/udp/239.76.246.110:1234", "长沙政法,http://8.8.8.8:8/udp/239.76.246.122:1234",
-    "长沙新闻,http://8.8.8.8:8/udp/239.76.246.121:1234", "健康电视,http://8.8.8.8:8/udp/239.76.246.127:1234",
-    "欢笑剧场4K,http://8.8.8.8:8/udp/239.76.246.130:1234", "都市剧场,http://8.8.8.8:8/udp/239.76.246.215:1234",
-    "极速汽车,http://8.8.8.8:8/udp/239.76.246.133:1234", "动漫秀场,http://8.8.8.8:8/udp/239.76.246.131:1234",
-    "游戏风云,http://8.8.8.8:8/udp/239.76.246.132:1234", "凤凰中文,http://8.8.8.8:8/udp/239.76.246.134:1234",
-    "凤凰中文,http://8.8.8.8:8/udp/239.76.253.135:9000", "凤凰资讯,http://8.8.8.8:8/udp/239.76.253.134:9000",
-    "凤凰资讯,http://8.8.8.8:8/udp/239.76.246.135:1234", "体育,http://8.8.8.8:8/udp/239.76.253.136:9000",
-    "全纪实,http://8.8.8.8:8/udp/239.76.246.137:1234", "法治天地,http://8.8.8.8:8/udp/239.76.246.138:1234",
-    "生活时尚,http://8.8.8.8:8/udp/239.76.246.223:1234", "浏阳新闻,http://8.8.8.8:8/udp/239.76.248.6:1234",
-    "常德综合,http://8.8.8.8:8/udp/239.76.248.10:1234", "常德公共,http://8.8.8.8:8/udp/239.76.248.11:1234",
-    "衡阳综合,http://8.8.8.8:8/udp/239.76.248.13:1234", "衡阳公共,http://8.8.8.8:8/udp/239.76.248.14:1234",
-    "娄底综合,http://8.8.8.8:8/udp/239.76.248.18:1234", "娄底公共,http://8.8.8.8:8/udp/239.76.248.19:1234",
-    "张家界综合,http://8.8.8.8:8/udp/239.76.252.234:9000", "张家界,http://8.8.8.8:8/udp/239.76.252.235:9000",
-    "邵阳新闻,http://8.8.8.8:8/udp/239.76.248.23:1234", "永州新闻,http://8.8.8.8:8/udp/239.76.248.57:1234",
-    "怀化综合,http://8.8.8.8:8/udp/239.76.255.12:9000", "金色夕阳,http://8.8.8.8:8/udp/239.76.254.43:9000",
-    "CCTV第一剧场,http://8.8.8.8:8/udp/239.76.254.49:9000", "CCTV风云足球,http://8.8.8.8:8/udp/239.76.254.52:9000",
-    "CCTV风云音乐,http://8.8.8.8:8/udp/239.76.254.51:9000", "CCTV风云剧场,http://8.8.8.8:8/udp/239.76.254.50:9000",
-    "CCTV女姓时尚,http://8.8.8.8:8/udp/239.76.254.55:9000", "CCTV央视文化精品,http://8.8.8.8:8/udp/239.76.254.56:9000",
-    "CCTV世界地理,http://8.8.8.8:8/udp/239.76.254.57:9000", "CCTV兵器科技,http://8.8.8.8:8/udp/239.76.254.59:9000",
-    "CCTV央视台球,http://8.8.8.8:8/udp/239.76.254.58:9000", "CCTV怀旧剧场,http://8.8.8.8:8/udp/239.76.254.53:9000",
-    "CCTV电视指南,http://8.8.8.8:8/udp/239.76.254.61:9000", "CCTV央视高尔夫,http://8.8.8.8:8/udp/239.76.254.62:9000",
-    "北京少儿,http://8.8.8.8:8/udp/239.76.254.81:9000", "快乐垂钓,http://8.8.8.8:8/udp/239.76.253.5:9000",
-    "湖南卫视,http://8.8.8.8:8/udp/239.76.253.101:9000", "湖南国际,http://8.8.8.8:8/udp/239.76.253.102:9000",
-    "湖南卫视,http://8.8.8.8:8/udp/239.76.253.100:9000", "湖南经视,http://8.8.8.8:8/udp/239.76.253.103:9000",
-    "湖南都市,http://8.8.8.8:8/udp/239.76.253.104:9000", "湖南娱乐,http://8.8.8.8:8/udp/239.76.253.105:9000",
-    "湖南电影,http://8.8.8.8:8/udp/239.76.253.106:9000", "湖南电视剧,http://8.8.8.8:8/udp/239.76.253.108:9000",
-    "金鹰卡通,http://8.8.8.8:8/udp/239.76.253.107:9000", "湖南公共,http://8.8.8.8:8/udp/239.76.253.109:9000",
-    "金鹰纪实,http://8.8.8.8:8/udp/239.76.253.110:9000", "长沙新闻,http://8.8.8.8:8/udp/239.76.253.121:9000",
-    "长沙政法,http://8.8.8.8:8/udp/239.76.253.122:9000", "欢笑剧场4K,http://8.8.8.8:8/udp/239.76.253.130:9000",
-    "极速汽车,http://8.8.8.8:8/udp/239.76.253.133:9000", "动漫秀场,http://8.8.8.8:8/udp/239.76.253.131:9000",
-    "凤凰中文,http://8.8.8.8:8/udp/239.76.253.135:9000", "凤凰资讯,http://8.8.8.8:8/udp/239.76.253.134:9000",
-    "体育,http://8.8.8.8:8/udp/239.76.253.136:9000", "全纪实,http://8.8.8.8:8/udp/239.76.253.137:9000",
-    "金色学堂,http://8.8.8.8:8/udp/239.76.253.139:9000", "法治天地,http://8.8.8.8:8/udp/239.76.253.138:9000",
-    "CCTV1,http://8.8.8.8:8/udp/239.76.253.151:9000", "CCTV2,http://8.8.8.8:8/udp/239.76.253.152:9000",
-    "CCTV3,http://8.8.8.8:8/udp/239.76.253.153:9000", "CCTV4,http://8.8.8.8:8/udp/239.76.253.154:9000",
-    "CCTV5,http://8.8.8.8:8/udp/239.76.253.155:9000", "CCTV5+,http://8.8.8.8:8/udp/239.76.253.168:9000",
-    "CCTV6,http://8.8.8.8:8/udp/239.76.253.156:9000", "CCTV7,http://8.8.8.8:8/udp/239.76.253.157:9000",
-    "CCTV8,http://8.8.8.8:8/udp/239.76.253.158:9000", "CCTV9,http://8.8.8.8:8/udp/239.76.253.159:9000",
-    "CCTV10,http://8.8.8.8:8/udp/239.76.253.160:9000", "CCTV12,http://8.8.8.8:8/udp/239.76.253.162:9000",
-    "CCTV13,http://8.8.8.8:8/udp/239.76.253.93:9000", "CCTV14,http://8.8.8.8:8/udp/239.76.253.164:9000",
-    "CCTV16,http://8.8.8.8:8/udp/239.76.253.98:9000", "CCTV16 4K,http://8.8.8.8:8/udp/239.76.253.214:9000",
-    "CCTV16 4K,http://8.8.8.8:8/udp/239.76.254.200:9000", "CCTV16 4K,http://8.8.8.8:8/udp/239.76.253.224:9000",
-    "CCTV16 4K,http://8.8.8.8:8/udp/239.76.253.230:9000", "江苏卫视,http://8.8.8.8:8/udp/239.76.253.181:9000",
-    "浙江卫视,http://8.8.8.8:8/udp/239.76.253.182:9000", "北京卫视,http://8.8.8.8:8/udp/239.76.253.184:9000",
-    "天津卫视,http://8.8.8.8:8/udp/239.76.253.185:9000", "东方卫视,http://8.8.8.8:8/udp/239.76.253.186:9000",
-    "深圳卫视,http://8.8.8.8:8/udp/239.76.253.188:9000", "湖北卫视,http://8.8.8.8:8/udp/239.76.253.193:9000",
-    "山东卫视,http://8.8.8.8:8/udp/239.76.253.195:9000", "黑龙江卫视,http://8.8.8.8:8/udp/239.76.253.200:9000",
-    "吉林卫视,http://8.8.8.8:8/udp/239.76.253.201:9000", "河南卫视,http://8.8.8.8:8/udp/239.76.253.202:9000",
-    "海南卫视,http://8.8.8.8:8/udp/239.76.253.203:9000", "四川卫视,http://8.8.8.8:8/udp/239.76.253.91:9000",
-    "重庆卫视,http://8.8.8.8:8/udp/239.76.253.92:9000", "广西卫视,http://8.8.8.8:8/udp/239.76.254.54:9000",
-    "陕西卫视,http://8.8.8.8:8/udp/239.76.254.76:9000", "云南卫视,http://8.8.8.8:8/udp/239.76.254.60:9000",
-    "青海卫视,http://8.8.8.8:8/udp/239.76.254.132:9000", "甘肃卫视,http://8.8.8.8:8/udp/239.76.253.94:9000",
-    "都市剧场,http://8.8.8.8:8/udp/239.76.253.215:9000", "生活时尚,http://8.8.8.8:8/udp/239.76.253.223:9000",
-    "长沙女姓,http://8.8.8.8:8/udp/239.76.252.23:9000", "湖南卫视,http://8.8.8.8:8/udp/239.76.252.115:9000",
-    "湖南经视,http://8.8.8.8:8/udp/239.76.252.116:9000", "湖南电视剧,http://8.8.8.8:8/udp/239.76.252.118:9000",
-    "湖南电影,http://8.8.8.8:8/udp/239.76.252.119:9000", "金鹰卡通,http://8.8.8.8:8/udp/239.76.252.120:9000",
-    "湖南公共,http://8.8.8.8:8/udp/239.76.252.123:9000", "湖南娱乐,http://8.8.8.8:8/udp/239.76.252.121:9000",
-    "金鹰纪实,http://8.8.8.8:8/udp/239.76.252.122:9000", "湖南国际,http://8.8.8.8:8/udp/239.76.252.124:9000",
-    "湖南都市,http://8.8.8.8:8/udp/239.76.252.117:9000", "快乐垂钓,http://8.8.8.8:8/udp/239.76.252.127:9000",
-    "河南梨园,http://8.8.8.8:8/udp/239.76.252.179:9000", "文物宝库,http://8.8.8.8:8/udp/239.76.252.180:9000",
-    "武术世界,http://8.8.8.8:8/udp/239.76.252.181:9000", "广东卫视,http://8.8.8.8:8/udp/239.76.252.189:9000",
-    "东南卫视,http://8.8.8.8:8/udp/239.76.252.190:9000", "中国教育,http://8.8.8.8:8/udp/239.76.252.192:9000",
-    "安徽卫视,http://8.8.8.8:8/udp/239.76.252.196:9000", "辽宁卫视,http://8.8.8.8:8/udp/239.76.252.197:9000",
-    "河北卫视,http://8.8.8.8:8/udp/239.76.252.199:9000", "贵州卫视,http://8.8.8.8:8/udp/239.76.252.198:9000",
-    "长沙影视,http://8.8.8.8:8/udp/239.76.252.204:9000", "湘西综合,http://8.8.8.8:8/udp/239.76.252.208:9000",
-    "湘西公共,http://8.8.8.8:8/udp/239.76.252.209:9000", "湘西公共,http://8.8.8.8:8/udp/239.76.252.210:9000",
-    "湖南教育,http://8.8.8.8:8/udp/239.76.252.233:9000", "浏阳新闻,http://8.8.8.8:8/udp/239.76.255.6:9000",
-    "湘西公共,http://8.8.8.8:8/udp/239.76.252.209:9000", "湘西公共,http://8.8.8.8:8/udp/239.76.252.210:9000",
-    "湘西综合,http://8.8.8.8:8/udp/239.76.252.208:9000", "湘西综合,http://8.8.8.8:8/udp/239.76.245.208:1234",
-    "衡阳公共,http://8.8.8.8:8/udp/239.76.255.14:9000", "衡阳综合,http://8.8.8.8:8/udp/239.76.255.13:9000",
-    "衡阳县电视台,http://8.8.8.8:8/udp/239.76.255.26:9000", "邵阳公共,http://8.8.8.8:8/udp/239.76.255.22:9000",
-    "邵阳综合,http://8.8.8.8:8/udp/239.76.255.21:9000", "娄底教育,http://8.8.8.8:8/udp/239.76.255.20:9000",
-    "娄底综合,http://8.8.8.8:8/udp/239.76.255.18:9000", "娄底公共,http://8.8.8.8:8/udp/239.76.255.19:9000",
-    "郴州综合,http://8.8.8.8:8/udp/239.76.253.75:9000", "张家界综合,http://8.8.8.8:8/udp/239.76.252.234:9000",
-    "张家界公共,http://8.8.8.8:8/udp/239.76.252.235:9000", "怀化综合,http://8.8.8.8:8/udp/239.76.255.12:9000",
-    "常德综合,http://8.8.8.8:8/udp/239.76.255.10:9000", "常德公共,http://8.8.8.8:8/udp/239.76.255.11:9000",
-    "永州综合,http://8.8.8.8:8/udp/239.76.255.23:9000", "溆浦综合,http://8.8.8.8:8/udp/239.76.255.25:9000",
-    "武冈综合,http://8.8.8.8:8/udp/239.76.255.29:9000", "新化,http://8.8.8.8:8/udp/239.76.255.31:9000",
-    "津市,http://8.8.8.8:8/udp/239.76.255.30:9000", "桂东融媒,http://8.8.8.8:8/udp/239.76.253.231:9000",
-    "道县综合,http://8.8.8.8:8/udp/239.76.255.28:9000", "永州公共,http://8.8.8.8:8/udp/239.76.255.24:9000",
-    "株洲公共,http://8.8.8.8:8/udp/239.76.252.236:9000", "株洲综合,http://8.8.8.8:8/udp/239.76.255.1:9000",
-    "湘潭公共,http://8.8.8.8:8/udp/239.76.255.5:9000", "湘潭综合,http://8.8.8.8:8/udp/239.76.255.4:9000",
-    "益阳公共,http://8.8.8.8:8/udp/239.76.255.16:9000", "益阳综合,http://8.8.8.8:8/udp/239.76.255.15:9000",
-    "岳阳综合,http://8.8.8.8:8/udp/239.76.255.7:9000", "岳阳科教,http://8.8.8.8:8/udp/239.76.255.9:9000",
-    "岳阳公共,http://8.8.8.8:8/udp/239.76.255.8:9000",
-]
-
-results = []
-channel = []
-urls_all = []
-resultsx = []
-resultxs = []
-error_channels = []
-
-for url in urls:
-    url_0 = str(base64.b64encode((f'"Rozhuk" && city="{url}" && org="Chinanet"').encode("utf-8")), "utf-8")
-    url_64 = f'https://fofa.info/result?qbase64={url_0}'
-    print(url_64)
-    try:
-        response = requests.get(url_64, headers=headers, timeout=15)
-        page_content = response.text
-        print(f" {url}  访问成功")
-        pattern = r'href="(http://\d+\.\d+\.\d+\.\d+:\d+)"'
-        page_urls = re.findall(pattern, page_content)
-        for urlx in page_urls:
-            try:
-                response = requests.get(url=urlx + '/stat', timeout=1)
-                response.raise_for_status()  # 返回状态码不是200异常
-                page_content = response.text
-                pattern = r'connections online'
-                page_proctabl = re.findall(pattern, page_content)
-                if page_proctabl:
-                    urls_all.append(urlx)
-                    print(f"{urlx} 可以访问")
-
-            except requests.RequestException as e:
-                pass
-    except:
-        print(f"{url_64} 访问失败")
-        pass
-
-urls_all = set(urls_all)  # 去重得到唯一的URL列表
-for urlx in urls_all:
-    channel = [f'{name},{url.replace("http://8.8.8.8:8", urlx)}' for name, url in
-               [line.strip().split(',') for line in channelsx]]
-    results.extend(channel)
-
-results = sorted(results)
+for line in fileinput.input("iptv_list.txt", inplace=True):  #打开文件，并对其进行关键词原地替换 
+    line = line.replace("CHC电影", "CHC影迷电影") 
+    line = line.replace("高清电影", "影迷电影") 
+    print(line, end="")  #设置end=""，避免输出多余的换行符   
 
 
-# with open("itv.txt", 'w', encoding='utf-8') as file:
-#     for result in results:
-#         file.write(result + "\n")
-#         print(result)
 
-# 定义工作线程函数
-def check_channel(url):
-    """检查视频流的有效性"""
-    try:
-        print(f"正在检查频道: {url}")  # 添加调试输出
-        cap = cv2.VideoCapture(url)
-        if not cap.isOpened():
-            print(f"无法打开视频流: {url}")
-            return None
-        
-        # 尝试读取第一帧
-        ret, frame = cap.read()
-        cap.release()
-        if ret:
-            print(f"频道有效: {url}")
-        else:
-            print(f"频道无效: {url}")
-        return url if ret else None
-    except Exception as e:
-        print(f"发生错误: {e}")
-        return None
 
-def worker(url):
-    """工作线程：获取URL并只检查CCTV1频道的有效性"""
-    urls_found = fetch_urls(url)
-    valid_ips = []
 
-    for urlx in urls_found:
-        # 只检查CCTV1的有效性
-        cctv1_url = "http://8.8.8.8:8/udp/239.76.245.51:1234".replace("http://8.8.8.8:8", urlx)
-        if check_channel(cctv1_url):
-            valid_ips.append(urlx)  # 如果CCTV1有效，将此IP记录为有效
-            print(f"找到有效IP: {urlx}")
-            break  # 一旦找到一个有效IP，停止进一步检查
+
+
+
+
+
+#从整理好的文本中按类别进行特定关键词提取#############################################################################################
+keywords = ['CCTV', "电视指南", "兵器科技", "世界地理", "文化精品", "风云剧场", "风云音乐", "怀旧剧场", "第一剧场", "女性时尚", "风云足球", "央视台球", "央视高网"]  # 需要提取的关键字列表
+pattern = '|'.join(keywords)  # 创建正则表达式模式，匹配任意一个关键字
+#pattern = r"^(.*?),(?!#genre#)(.*?)$" #以分类直接复制
+with open('iptv_list.txt', 'r', encoding='utf-8') as file, open('c.txt', 'w', encoding='utf-8') as c:    #####定义临时文件名
+    c.write('\n央视频道&爬虫,#genre#\n')                                                                  #####写入临时文件名$GD
+    for line in file:
+      if '$GD' not in line and '4K' not in line:
+        if re.search(pattern, line):  # 如果行中有任意关键字
+         c.write(line)  # 将该行写入输出文件                                                          #####定义临时文件
+ 
+
+
+
+#从整理好的文本中按类别进行特定关键词提取#############################################################################################
+keywords = ['IHOT爱', '北京IPTV', 'kk', 'kk', 'kk', 'kk', 'kk', 'kk', 'kk']  # 需要提取的关键字列表
+pattern = '|'.join(keywords)  # 创建正则表达式模式，匹配任意一个关键字
+#pattern = r"^(.*?),(?!#genre#)(.*?)$" #以分类直接复制
+with open('iptv_list.txt', 'r', encoding='utf-8') as file, open('c2.txt', 'w', encoding='utf-8') as c2:    #####定义临时文件名
+    c2.write('\n数字频道&爬虫,#genre#\n')                                                                  #####写入临时文件名$GD
+    for line in file:
+      if '$GD' not in line and '调解' not in line:
+        if re.search(pattern, line):  # 如果行中有任意关键字
+         c2.write(line)  # 将该行写入输出文件                                                          #####定义临时文件
+ 
+
+
+
+
+#从整理好的文本中按类别进行特定关键词提取#############################################################################################
+keywords = ['kk', 'kk', 'kk', 'kk', 'kk', 'kk', 'kk', 'kk']  # 需要提取的关键字列表
+pattern = '|'.join(keywords)  # 创建正则表达式模式，匹配任意一个关键字
+#pattern = r"^(.*?),(?!#genre#)(.*?)$" #以分类直接复制
+with open('iptv_list.txt', 'r', encoding='utf-8') as file, open('c1.txt', 'w', encoding='utf-8') as c1:    #####定义临时文件名
+    for line in file:
+      if '$GD' not in line and '4K' not in line:
+        if re.search(pattern, line):  # 如果行中有任意关键字
+         c1.write(line)  # 将该行写入输出文件                                                          #####定义临时文件
+ 
+
+
+
+
+
+
+
+
+##########################################################################E#####################################################################################
+keywords = ['kk', 'kk', 'kk', 'kk', 'kk', 'kk']  # 需要提取的关键字列表
+pattern = '|'.join(keywords)  # 创建正则表达式模式，匹配任意一个关键字
+#pattern = r"^(.*?),(?!#genre#)(.*?)$" #以分类直接复制
+with open('iptv_list.txt', 'r', encoding='utf-8') as file, open('e.txt', 'w', encoding='utf-8') as e:    #####定义临时文件名
+    for line in file:
+      if '环绕' not in line and 'CCTV' not in line and '4K' not in line:
+        if re.search(pattern, line):  # 如果行中有任意关键字
+         e.write(line)  # 将该行写入输出文件                                                          #####定义临时文件
+
+
+
+
+
+
+###############################################################################################################################################################################
+keywords = ['凤凰', 'CHC']  # 需要提取的关键字列表
+pattern = '|'.join(keywords)  # 创建正则表达式模式，匹配任意一个关键字
+#pattern = r"^(.*?),(?!#genre#)(.*?)$" #以分类直接复制
+with open('iptv_list.txt', 'r', encoding='utf-8') as file, open('DD.txt', 'w', encoding='utf-8') as DD:
+    DD.write('\n凤凰CHC&爬虫,#genre#\n')
+    for line in file:
+        if re.search(pattern, line):  # 如果行中有任意关键字
+          DD.write(line)  # 将该行写入输出文件
+
+
+###############################################################################################################################################################################
+keywords = ['湖南', '河南', '陕西', '河南公共', '河南乡村', '北京', '河南民生', '湖南', '山西', '河南电视剧', '河南都市', '江苏']  # 需要提取的关键字列表
+pattern = '|'.join(keywords)  # 创建正则表达式模式，匹配任意一个关键字
+#pattern = r"^(.*?),(?!#genre#)(.*?)$" #以分类直接复制
+with open('iptv_list.txt', 'r', encoding='utf-8') as file, open('df.txt', 'w', encoding='utf-8') as df:
+    df.write('\n省级频道&爬虫,#genre#\n')
+    for line in file:
+      if 'CCTV' not in line and '卫视' not in line:        
+        if re.search(pattern, line):  # 如果行中有任意关键字
+          df.write(line)  # 将该行写入输出文件
+
+
+
+
+
+
+
+###############################################################################################################################################################################
+keywords = ['k', 'k', 'kk', 'kk', 'kk']  # 需要提取的关键字列表
+pattern = '|'.join(keywords)  # 创建正则表达式模式，匹配任意一个关键字
+#pattern = r"^(.*?),(?!#genre#)(.*?)$" #以分类直接复制
+with open('iptv_list.txt', 'r', encoding='utf-8') as file, open('df1.txt', 'w', encoding='utf-8') as df1:
+   # df1.write('\n卫视频道,#genre#\n')
+    for line in file:
+      if 'CCTV' not in line and 'kk' not in line and '影' not in line and '剧' not in line and '4K' not in line:        
+        if re.search(pattern, line):  # 如果行中有任意关键字
+          df1.write(line)  # 将该行写入输出文件
+
+
+
+
+
+################
+keywords = ['优漫', '动漫', '卡酷', '卡通', '动画']  # 需要提取的关键字列表
+pattern = '|'.join(keywords)  # 创建正则表达式模式，匹配任意一个关键字
+#pattern = r"^(.*?),(?!#genre#)(.*?)$" #以分类直接复制
+with open('iptv_list.txt', 'r', encoding='utf-8') as file, open('f.txt', 'w', encoding='utf-8') as f:    #####定义临时文件名
+    f.write('\n少儿频道&爬虫,#genre#\n')                                                                  #####写入临时文件名
+    for line in file:
+      if 'CCTV' not in line and 'b' not in line and 'CHC' not in line and '4K' not in line and 'genre' not in line:
+        if re.search(pattern, line):  # 如果行中有任意关键字
+         f.write(line)  # 将该行写入输出文件
+
+
+###############f1
+keywords = ['卫视', 'kk']  # 需要提取的关键字列表
+pattern = '|'.join(keywords)  # 创建正则表达式模式，匹配任意一个关键字
+#pattern = r"^(.*?),(?!#genre#)(.*?)$" #以分类直接复制
+with open('iptv_list.txt', 'r', encoding='utf-8') as file, open('f1.txt', 'w', encoding='utf-8') as f1:    #####定义临时文件名
+    f1.write('\n卫视频道&爬虫,#genre#\n')                                                                  #####写入临时文件名
+    for line in file:
+      if 'CCTV' not in line and '北京IPTV' not in line and 'CHC' not in line and '4K' not in line and 'genre' not in line:
+        if re.search(pattern, line):  # 如果行中有任意关键字
+         f1.write(line)  # 将该行写入输出文件
+
+
+
+
+#  获取远程港澳台直播源文件，打开文件并输出临时文件并替换关键词
+url = "https://raw.bgithub.xyz/mengxianshengaaa/live/main/tv/kong.txt"          #源采集地址
+r = requests.get(url)
+open('HK.txt','wb').write(r.content)         #打开源文件并临时写入
+keywords = [',', 'rtmp']  # 需要提取的关键字列表 8M1080
+pattern = '|'.join(keywords)  # 创建正则表达式模式，匹配任意一个关键字
+#pattern = r"^(.*?),(?!#genre#)(.*?)$" #直接复制不带分类行
+with open('HK.txt', 'r', encoding='utf-8') as file, open('b2.txt', 'w', encoding='utf-8') as b2:
+    for line in file:
+        if re.search(pattern, line):  # 如果行中有任意关键字
+          b2.write(line)  # 将该行写入输出文件
+
+
+
+
+
+######################################################################################################################打开欲要最终合并的文件并输出临时文件并替换关键词
+with open('yeye.txt', 'r', encoding='utf-8') as f:  #打开文件，并对其进行关键词提取                                               ###########
+ #keywords = ['http', 'rtmp', 'genre']  # 需要提取的关键字列表                                                       ###########
+ keywords = [ '电影', '珠江', '大湾区']  # 需要提取的关键字列表                                                       ###########
+ pattern = '|'.join(keywords)  # 创建正则表达式模式，匹配任意一个关键字                                      ###########
+ #pattern = r"^(.*?),(?!#genre#)(.*?)$" #以分类直接复制                                                     ###########
+ with open('yeye.txt', 'r', encoding='utf-8') as file, open('b.txt', 'w', encoding='utf-8') as b:           ###########
+    b.write('\n酒店频道&爬虫,#genre#\n')                                                                        ###########
+    for line in file:  
+      if 'CCTV' not in line and '卫视' not in line and 'kk' not in line and 'kk' not in line and 'genre' not in line:###########
+        if re.search(pattern, line):  # 如果行中有任意关键字                                                ###########
+          b.write(line)  # 将该行写入输出文件                                                               ###########
+                                                                                                           ###########
+for line in fileinput.input("b.txt", inplace=True):  #打开文件，并对其进行关键词原地替换                     ###########
+    #line = line.replace("央视频道,#genre#", "")                                                                         ###########
+    line = line.replace("四川康巴卫视", "康巴卫视")                                                                         ###########
+    line = line.replace("河南文物宝库", "收藏天下")   
+    line = line.replace("河南影视", "河南电视剧")        ###########
+    line = line.replace("[720p]", "")      
+    line = line.replace("[1080p]", "")     ###########
+    line = line.replace("河南农村", "河南乡村")                                                                         ###########
+    line = line.replace("CCTV11戏曲", "CCTV11")                                                                         ###########
+    line = line.replace("梨园", "梨园频道")                                                        ###########
+    print(line, end="")  #设置end=""，避免输出多余的换行符   
     
-    return valid_ips
 
 
-# 创建多个工作线程
-num_threads = 20
-for _ in range(num_threads):
-    t = threading.Thread(target=worker, daemon=True)
-    t.start()
+##############################################################################################################################################################################################################################################
 
-# 添加下载任务到队列
-for result in results:
-    task_queue.put(result)
+#  获取远程港澳台直播源文件，打开文件并输出临时文件并替换关键词
+url = "https://raw.bgithub.xyz/frxz751113/AAAAA/main/TW.txt"          #源采集地址
+r = requests.get(url)
+open('TW.txt','wb').write(r.content)         #打开源文件并临时写入
+#keywords = ['http', 'rtmp']  # 需要提取的关键字列表 8M1080
+#pattern = '|'.join(keywords)  # 创建正则表达式模式，匹配任意一个关键字
+pattern = r"^(.*?),(?!#genre#)(.*?)$" #直接复制不带分类行
+with open('TW.txt', 'r', encoding='utf-8') as file, open('a.txt', 'w', encoding='utf-8') as a:
+    for line in file:
+        if re.search(pattern, line):  # 如果行中有任意关键字
+          a.write(line)  # 将该行写入输出文件
+for line in fileinput.input("a.txt", inplace=True):   #打开临时文件原地替换关键字
+    line = line.replace("﻿Taiwan,#genre#", "")                         #编辑替换字
+    line = line.replace("动作电影", "CHC动作电影")      
+    line = line.replace("影迷电影", "CHC影迷电影")       
+    line = line.replace("八大第1台", "八大第一台")      
+    line = line.replace("纬来精彩", "纬来精采")      
+    line = line.replace("[720p]", "")      
+    line = line.replace("[1080p]", "")            #编辑替换字
+    print(line, end="")                                     #加入此行去掉多余的转行符
 
-# 等待所有任务完成
-task_queue.join()
+
+#  获取远程直播源文件
+url = "https://raw.bgithub.xyz/mengxianshengaaa/IPTV/main/json/zhibo.txt"          #源采集地址
+r = requests.get(url)
+open('zhibo.txt','wb').write(r.content)         #打开源文件并临时写入
+
+keywords = ['']  # 需要提取的关键字列表，留空则全局选择
+pattern = '|'.join(keywords)  # 创建正则表达式模式，匹配任意一个关键字
+#pattern = r"^(.*?),(?!#genre#)(.*?)$" #去掉genre行直接复制
+with open('zhibo.txt', 'r', encoding='utf-8') as file, open('TT.txt', 'w', encoding='utf-8') as TT:
+    #TT.write('\n央视频道,#genre#\n')
+    for line in file:
+        if re.search(pattern, line):  # 如果行中有任意关键字
+          TT.write(line)  # 将该行写入输出文件
+        
 
 
-def channel_key(channel_name):
-    match = re.search(r'\d+', channel_name)
-    if match:
-        return int(match.group())
-    else:
-        return float('inf')  # 返回一个无穷大的数字作为关键字
+###########################################################################################################################################################################
+# 读取要合并的频道文件，并生成临时文件##############################################################################################################
+file_contents = []
+file_paths = ["TT.txt", "b2.txt", "b.txt", "a.txt", "c.txt", "c1.txt", "c2.txt", "e.txt", "DD.txt", "df.txt", "df1.txt", "f.txt", "f1.txt"]  # 替换为实际的文件路径列表
+for file_path in file_paths:
+    with open(file_path, 'r', encoding="utf-8") as file:
+        content = file.read()
+        file_contents.append(content)
+# 生成合并后的文件
+with open("GAT.txt", "w", encoding="utf-8") as output:
+    output.write(''.join(file_contents))
+
+           
+
+ ###########################################################################################################################################################################     
+# 读取临时文件，并生成结果文件。这一步其实多余，懒得改##############################################################################################################
+file_contents = []
+file_paths = ["GAT.txt"]  # 替换为实际的文件路径列表
 
 
-for resulta in resultsx:
-    channel_name, channel_url = resulta
-    resultx = channel_name, channel_url
-    resultxs.append(resultx)
+for file_path in file_paths:
+    with open(file_path, 'r', encoding="utf-8") as file:
+        content = file.read()
+        file_contents.append(content)
+###########################################################################################################################################################################
+# 写入合并后的文件
+with open("iptv_list.txt", "w", encoding="utf-8") as output:
+    output.write(''.join(file_contents))   #加入\n则多一空行
 
-# 对频道进行排序
-resultxs.sort(key=lambda x: channel_key(x[0]))
+for line in fileinput.input("iptv_list.txt", inplace=True):   #打开临时文件原地替换关键字
+    line = line.replace("008广", "广")
+    line = line.replace("家庭电影", "家庭影院")    
+    line = line.replace("CHC", "CHC")  
+    print(line, end="")   
 
-result_counter = 10  # 每个频道需要的个数
+with open('iptv_list.txt', 'r', encoding="utf-8") as file:
+ lines = file.readlines()
+ 
+# 使用列表来存储唯一的行的顺序 
+ unique_lines = [] 
+ seen_lines = set() 
 
-with open("iptv_list.txt", 'w', encoding='utf-8') as file:
-    channel_counters = {}
-    file.write('央视频道,#genre#\n')
-    for result in resultxs:
-        channel_name, channel_url = result
-        if 'CCTV' in channel_name:
-            if channel_name in channel_counters:
-                if channel_counters[channel_name] >= result_counter:
-                    continue
+# 遍历每一行，如果是新的就加入unique_lines 
+for line in lines:
+ if line not in seen_lines:
+  unique_lines.append(line)
+  seen_lines.add(line)
+
+# 将唯一的行写入新的文档 
+with open('iptv_list.txt', 'w', encoding="utf-8") as file:
+ file.writelines(unique_lines)
+
+
+
+################简体转繁体
+# 创建一个OpenCC对象，指定转换的规则为繁体字转简体字
+converter = OpenCC('t2s.json')#繁转简
+#converter = OpenCC('s2t.json')#简转繁
+# 打开txt文件
+with open('iptv_list.txt', 'r', encoding='utf-8') as file:
+    traditional_text = file.read()
+
+# 进行繁体字转简体字的转换
+simplified_text = converter.convert(traditional_text)
+
+# 将转换后的简体字写入txt文件
+with open('iptv_list.txt', 'w', encoding='utf-8') as file:
+    file.write(simplified_text)
+
+######################TXT转M3U#####################################################################################################################################################
+
+
+#TXT转M3U#
+import datetime
+def txt_to_m3u(input_file, output_file):
+    # 读取txt文件内容
+    with open(input_file, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+    # 打开m3u文件并写入内容
+    now = datetime.datetime.utcnow() + datetime.timedelta(hours=8)
+    current_time = now.strftime("%m-%d %H:%M")
+    with open(output_file, 'w', encoding='utf-8') as f:  
+        f.write('#EXTM3U x-tvg-url="https://live.fanmingming.com/e.xml" catchup="append" catchup-source="?playseek=${(b)yyyyMMddHHmmss}-${(e)yyyyMMddHHmmss}"\n')
+        f.write(f'#EXTINF:-1 group-title="更新时间{current_time}",河南卫视\n')    
+        f.write(f'http://61.163.181.78:9901/tsfile/live/1034_1.m3u8?key=txiptv&playlive=1&authid=0\n')    
+        # 初始化genre变量
+        genre = ''
+        # 遍历txt文件内容
+        for line in lines:
+            line = line.strip()
+            if "," in line:  # 防止文件里面缺失",”号报错
+                # if line:
+                # 检查是否是genre行
+                channel_name, channel_url = line.split(',', 1)
+                if channel_url == '#genre#':
+                    genre = channel_name
+                    print(genre)
                 else:
-                    file.write(f"{channel_name},{channel_url}\n")
-                    channel_counters[channel_name] += 1
-            else:
-                file.write(f"{channel_name},{channel_url}\n")
-                channel_counters[channel_name] = 1
-    channel_counters = {}
-    file.write('\n卫视频道,#genre#\n')
-    for result in resultxs:
-        channel_name, channel_url = result
-        if '卫视' in channel_name or '凤凰' in channel_name or 'CHC' in channel_name:
-            if channel_name in channel_counters:
-                if channel_counters[channel_name] >= result_counter:
-                    continue
-                else:
-                    file.write(f"{channel_name},{channel_url}\n")
-                    channel_counters[channel_name] += 1
-            else:
-                file.write(f"{channel_name},{channel_url}\n")
-                channel_counters[channel_name] = 1
-    channel_counters = {}
-    file.write('\n湖南频道,#genre#\n')
-    for result in resultxs:
-        channel_name, channel_url = result
-        if '湖南' in channel_name or '长沙' in channel_name or '金鹰' in channel_name or '娄底' in channel_name or '常德' \
-                in channel_name or '张家界' in channel_name or '怀化' in channel_name or '浏阳' in channel_name or '湘西' \
-                in channel_name or '衡阳' in channel_name or '邵阳' in channel_name or '郴州' in channel_name or '岳阳' in channel_name or '溆浦' \
-                in channel_name or '武冈' in channel_name or '新化' in channel_name or '津市' in channel_name or '桂东' in channel_name \
-                or '道县' in channel_name or '永州' in channel_name or '株洲' in channel_name or '湘潭' in channel_name or '益阳' in channel_name:
-            if channel_name in channel_counters:
-                if channel_counters[channel_name] >= result_counter:
-                    continue
-                else:
-                    file.write(f"{channel_name},{channel_url}\n")
-                    channel_counters[channel_name] += 1
-            else:
-                file.write(f"{channel_name},{channel_url}\n")
-                channel_counters[channel_name] = 1
+                   # 将频道信息写入m3u文件
+                    f.write(f'#EXTINF:-1 tvg-id="{channel_name}" tvg-name="{channel_name}" tvg-logo="https://live.fanmingming.com/tv/{channel_name}.png" group-title="{genre}",{channel_name}\n')
+                    f.write(f'{channel_url}\n')
+
+
+# 将txt文件转换为m3u文件
+txt_to_m3u('iptv_list.txt', 'iptv_list.m3u')
+
+
+#任务结束，删除不必要的过程文件###########################################################################################################################
+files_to_remove = ['湖南电信.txt', '河南电信.txt', "湖南移动.txt",  '酒店源.txt', '河南联通.txt',  '北京联通.txt', '陕西电信.txt',  '天津联通.txt', '江苏电信.txt', '四川电信.txt', \
+                       "GAT.txt", "DD.txt", "TW.txt", "a.txt", "b.txt", "b2.txt", "HK.txt", "c.txt", "c1.txt", "c2.txt", "e.txt", "f.txt", "f1.txt", "df.txt", "df1.txt", "TT.txt", "zhibo.txt"]
+
+for file in files_to_remove:
+    if os.path.exists(file):
+        os.remove(file)
+    else:              # 如果文件不存在，则提示异常并打印提示信息
+        print(f"文件 {file} 不存在，跳过删除。")
+
+print("任务运行完毕，分类频道列表可查看文件夹内iptv_list.txt文件！")
