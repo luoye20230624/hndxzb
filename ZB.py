@@ -325,37 +325,6 @@ with open('HK.txt', 'r', encoding='utf-8') as file, open('b2.txt', 'w', encoding
         if re.search(pattern, line):  # 如果行中有任意关键字
           b2.write(line)  # 将该行写入输出文件
 
-
-
-
-
-######################################################################################################################打开欲要最终合并的文件并输出临时文件并替换关键词
-with open('yeye.txt', 'r', encoding='utf-8') as f:  #打开文件，并对其进行关键词提取                                               ###########
- #keywords = ['http', 'rtmp', 'genre']  # 需要提取的关键字列表                                                       ###########
- keywords = [ '电影', '珠江', '大湾区']  # 需要提取的关键字列表                                                       ###########
- pattern = '|'.join(keywords)  # 创建正则表达式模式，匹配任意一个关键字                                      ###########
- #pattern = r"^(.*?),(?!#genre#)(.*?)$" #以分类直接复制                                                     ###########
- with open('yeye.txt', 'r', encoding='utf-8') as file, open('b.txt', 'w', encoding='utf-8') as b:           ###########
-    b.write('\n酒店频道&爬虫,#genre#\n')                                                                        ###########
-    for line in file:  
-      if 'CCTV' not in line and '卫视' not in line and 'kk' not in line and 'kk' not in line and 'genre' not in line:###########
-        if re.search(pattern, line):  # 如果行中有任意关键字                                                ###########
-          b.write(line)  # 将该行写入输出文件                                                               ###########
-                                                                                                           ###########
-for line in fileinput.input("b.txt", inplace=True):  #打开文件，并对其进行关键词原地替换                     ###########
-    #line = line.replace("央视频道,#genre#", "")                                                                         ###########
-    line = line.replace("四川康巴卫视", "康巴卫视")                                                                         ###########
-    line = line.replace("河南文物宝库", "收藏天下")   
-    line = line.replace("河南影视", "河南电视剧")        ###########
-    line = line.replace("[720p]", "")      
-    line = line.replace("[1080p]", "")     ###########
-    line = line.replace("河南农村", "河南乡村")                                                                         ###########
-    line = line.replace("CCTV11戏曲", "CCTV11")                                                                         ###########
-    line = line.replace("梨园", "梨园频道")                                                        ###########
-    print(line, end="")  #设置end=""，避免输出多余的换行符   
-    
-
-
 ##############################################################################################################################################################################################################################################
 
 #  获取远程港澳台直播源文件，打开文件并输出临时文件并替换关键词
