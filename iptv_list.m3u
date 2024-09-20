@@ -1,5 +1,5 @@
 #EXTM3U x-tvg-url="https://live.fanmingming.com/e.xml" catchup="append" catchup-source="?playseek=${(b)yyyyMMddHHmmss}-${(e)yyyyMMddHHmmss}"
-#EXTINF:-1 group-title="更新时间09-20 11:13",河南卫视
+#EXTINF:-1 group-title="更新时间09-20 12:15",河南卫视
 http://61.163.181.78:9901/tsfile/live/1034_1.m3u8?key=txiptv&playlive=1&authid=0
 #EXTINF:-1 tvg-id="CCTV4k" tvg-name="CCTV4k" tvg-logo="https://live.fanmingming.com/tv/CCTV4k.png" group-title="央视频道&爬虫",CCTV4k
 http://118.248.73.112:4022/rtp/239.76.246.214:1234
@@ -139,8 +139,50 @@ http://118.248.73.112:4022/rtp/239.76.254.132:9000
 http://118.248.73.112:4022/rtp/239.76.253.74:9000
 #EXTINF:-1 tvg-id="湖南卫视高清 12M" tvg-name="湖南卫视高清 12M" tvg-logo="https://live.fanmingming.com/tv/湖南卫视高清 12M.png" group-title="卫视频道&爬虫",湖南卫视高清 12M
 http://118.248.73.112:4022/rtp/239.76.252.115:9000
+#EXTINF:-1 tvg-id="IPTV 4K HEVC 16M" tvg-name="IPTV 4K HEVC 16M" tvg-logo="https://live.fanmingming.com/tv/IPTV 4K HEVC 16M.png" group-title="数字频道&爬虫",IPTV 4K HEVC 16M
+http://118.248.73.112:4022/rtp/239.76.252.35:9000
 #EXTINF:-1 tvg-id="梨园高清" tvg-name="梨园高清" tvg-logo="https://live.fanmingming.com/tv/梨园高清.png" group-title="数字频道&爬虫",梨园高清
 http://118.248.73.112:4022/rtp/239.76.252.179:9000
+#EXTINF:-1 tvg-id="IPTV戏剧频道高清" tvg-name="IPTV戏剧频道高清" tvg-logo="https://live.fanmingming.com/tv/IPTV戏剧频道高清.png" group-title="数字频道&爬虫",IPTV戏剧频道高清
+http://118.248.73.112:4022/rtp/239.76.253.40:9000
+#EXTINF:-1 tvg-id="IPTV健康之道高清" tvg-name="IPTV健康之道高清" tvg-logo="https://live.fanmingming.com/tv/IPTV健康之道高清.png" group-title="数字频道&爬虫",IPTV健康之道高清
+http://118.248.73.112:4022/rtp/239.76.253.42:9000
+#EXTINF:-1 tvg-id="IPTV经典剧场高清" tvg-name="IPTV经典剧场高清" tvg-logo="https://live.fanmingming.com/tv/IPTV经典剧场高清.png" group-title="数字频道&爬虫",IPTV经典剧场高清
+http://118.248.73.112:4022/rtp/239.76.252.221:9000
+#EXTINF:-1 tvg-id="IPTV抗战剧场高清" tvg-name="IPTV抗战剧场高清" tvg-logo="https://live.fanmingming.com/tv/IPTV抗战剧场高清.png" group-title="数字频道&爬虫",IPTV抗战剧场高清
+http://118.248.73.112:4022/rtp/239.76.245.218:1234
+#EXTINF:-1 tvg-id="IPTV家庭剧场高清" tvg-name="IPTV家庭剧场高清" tvg-logo="https://live.fanmingming.com/tv/IPTV家庭剧场高清.png" group-title="数字频道&爬虫",IPTV家庭剧场高清
+http://118.248.73.112:4022/rtp/239.76.252.220:9000
+#EXTINF:-1 tvg-id="IPTV古装剧场高清" tvg-name="IPTV古装剧场高清" tvg-logo="https://live.fanmingming.com/tv/IPTV古装剧场高清.png" group-title="数字频道&爬虫",IPTV古装剧场高清
+http://118.248.73.112:4022/rtp/239.76.252.219:9000
+#EXTINF:-1 tvg-id="IPTV精选热播高清" tvg-name="IPTV精选热播高清" tvg-logo="https://live.fanmingming.com/tv/IPTV精选热播高清.png" group-title="数字频道&爬虫",IPTV精选热播高清
+http://118.248.73.112:4022/rtp/239.76.254.110:9000
+#EXTINF:-1 tvg-id="IPTV芒果热剧高清" tvg-name="IPTV芒果热剧高清" tvg-logo="https://live.fanmingming.com/tv/IPTV芒果热剧高清.png" group-title="数字频道&爬虫",IPTV芒果热剧高清
+http://118.248.73.112:4022/rtp/239.76.252.194:9000
+#EXTINF:-1 tvg-id="IPTV芒果热剧高清" tvg-name="IPTV芒果热剧高清" tvg-logo="https://live.fanmingming.com/tv/IPTV芒果热剧高清.png" group-title="数字频道&爬虫",IPTV芒果热剧高清
+http://118.248.73.112:4022/rtp/239.76.253.222:9000
+#EXTINF:-1 tvg-id="IPTV芒果热播高清" tvg-name="IPTV芒果热播高清" tvg-logo="https://live.fanmingming.com/tv/IPTV芒果热播高清.png" group-title="数字频道&爬虫",IPTV芒果热播高清
+http://118.248.73.112:4022/rtp/239.76.252.215:9000
+#EXTINF:-1 tvg-id="IPTV芒果互娱高清" tvg-name="IPTV芒果互娱高清" tvg-logo="https://live.fanmingming.com/tv/IPTV芒果互娱高清.png" group-title="数字频道&爬虫",IPTV芒果互娱高清
+http://118.248.73.112:4022/rtp/239.76.253.126:9000
+#EXTINF:-1 tvg-id="IPTV芒果好看高清" tvg-name="IPTV芒果好看高清" tvg-logo="https://live.fanmingming.com/tv/IPTV芒果好看高清.png" group-title="数字频道&爬虫",IPTV芒果好看高清
+http://118.248.73.112:4022/rtp/239.76.253.219:9000
+#EXTINF:-1 tvg-id="IPTV高清院线高清" tvg-name="IPTV高清院线高清" tvg-logo="https://live.fanmingming.com/tv/IPTV高清院线高清.png" group-title="数字频道&爬虫",IPTV高清院线高清
+http://118.248.73.112:4022/rtp/239.76.252.217:9000
+#EXTINF:-1 tvg-id="IPTV综艺纪实高清" tvg-name="IPTV综艺纪实高清" tvg-logo="https://live.fanmingming.com/tv/IPTV综艺纪实高清.png" group-title="数字频道&爬虫",IPTV综艺纪实高清
+http://118.248.73.112:4022/rtp/239.76.254.111:9000
+#EXTINF:-1 tvg-id="IPTV故事频道高清" tvg-name="IPTV故事频道高清" tvg-logo="https://live.fanmingming.com/tv/IPTV故事频道高清.png" group-title="数字频道&爬虫",IPTV故事频道高清
+http://118.248.73.112:4022/rtp/239.76.253.41:9000
+#EXTINF:-1 tvg-id="IPTV搞笑动画高清" tvg-name="IPTV搞笑动画高清" tvg-logo="https://live.fanmingming.com/tv/IPTV搞笑动画高清.png" group-title="数字频道&爬虫",IPTV搞笑动画高清
+http://118.248.73.112:4022/rtp/239.76.247.207:1234
+#EXTINF:-1 tvg-id="IPTV幼教动画高清" tvg-name="IPTV幼教动画高清" tvg-logo="https://live.fanmingming.com/tv/IPTV幼教动画高清.png" group-title="数字频道&爬虫",IPTV幼教动画高清
+http://118.248.73.112:4022/rtp/239.76.247.210:1234
+#EXTINF:-1 tvg-id="IPTV甜宠高清" tvg-name="IPTV甜宠高清" tvg-logo="https://live.fanmingming.com/tv/IPTV甜宠高清.png" group-title="数字频道&爬虫",IPTV甜宠高清
+http://118.248.73.112:4022/rtp/239.76.254.109:9000
+#EXTINF:-1 tvg-id="IPTV电竞高清" tvg-name="IPTV电竞高清" tvg-logo="https://live.fanmingming.com/tv/IPTV电竞高清.png" group-title="数字频道&爬虫",IPTV电竞高清
+http://118.248.73.112:4022/rtp/239.76.252.214:9000
+#EXTINF:-1 tvg-id="IPTV电竞高清" tvg-name="IPTV电竞高清" tvg-logo="https://live.fanmingming.com/tv/IPTV电竞高清.png" group-title="数字频道&爬虫",IPTV电竞高清
+http://118.248.73.112:4022/rtp/239.76.252.136:9000
 #EXTINF:-1 tvg-id="CHC家庭影院高清" tvg-name="CHC家庭影院高清" tvg-logo="https://live.fanmingming.com/tv/CHC家庭影院高清.png" group-title="凤凰CHC&爬虫",CHC家庭影院高清
 http://118.248.73.112:4022/rtp/239.76.252.241:9000
 #EXTINF:-1 tvg-id="CHC高清电影" tvg-name="CHC高清电影" tvg-logo="https://live.fanmingming.com/tv/CHC高清电影.png" group-title="凤凰CHC&爬虫",CHC高清电影
