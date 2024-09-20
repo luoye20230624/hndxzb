@@ -1,4 +1,4 @@
-name: zb
+name: 组播源采集合并
 
 on:
   schedule:
@@ -6,36 +6,58 @@ on:
   workflow_dispatch:
     分支:
       - main
-
+      
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-
+        uses: actions/checkout@v2
+    
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v2
         with:
-          python-version: '3.12'
+          python-version: 3.x
 
       - name: Install dependencies
-        run: |
-          pip install opencv-python requests
-          # 添加其他需要的包
-          
-      - name: Run ZB
-        run: python ${{ github.workspace }}/DXZB.py
+        run: pip install --upgrade pip
+      - name: Install dependencies
+        run: pip install selenium requests futures eventlet
+      - name: Install dependencies
+        run: pip install opencv-python requests
+      - name: Install dependencies
+        run: pip install Beautifulsoup4 requests
+      - name: Install dependencies
+        run: pip install translate requests
+      #- name: Install dependencies
+        #run: pip install ffmpy
+      - name: Install dependencies
+        run: pip install termcolor
+      - name: Install dependencies
+        run: pip install func_timeout
+      - name: Install dependencies
+        run: pip install replace
+      - name: Install dependencies
+        run: pip install input
+      - name: Install dependencies
+        run: pip install opencc
+      - name: Install dependencies
+        run: pip install pypinyin
+      - name: Install dependencies
+        run: pip install pytz 
+      - name: Install dependencies
+        run: pip install tqdm
 
-      - name: Commit results
+      - name: Run iptv
+        run: python ${{ github.workspace }}/ZB.py      #这里更改要运行的py     
+
+      - name: 提交更改
         run: |
-            git config --local user.email "actions@github.com"
-            git config --local user.name "GitHub Action"
-            if [ -n "$(git status --porcelain)" ]; then
-            git add  *.txt #*.m3u
-            git commit -m "Automatic update"
-            git push
-            else
-              echo "No changes detected, skipping commit."
-            fi
+          git config --local user.email "actions@126.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit *.txt -m "Add generated file"
+          git commit *.m3u -m "Add generated file"
+          #git pull --rebase
+          git push -f
