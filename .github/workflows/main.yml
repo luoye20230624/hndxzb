@@ -38,7 +38,7 @@ jobs:
           pip install tqdm
 
       - name: Run iptv
-        run: python ${{ github.workspace }}/ZB.py  # 更改为要运行的 py 文件
+        run: python ${{ github.workspace }}/DXZB.py  # 更改为要运行的 py 文件
 
       - name: 提交更改
         run: |
