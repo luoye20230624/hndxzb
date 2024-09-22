@@ -4,9 +4,9 @@ on:
   schedule:
     - cron: '0 */4 * * *'  # 每四个小时的第 0 分钟运行
   workflow_dispatch:
-    分支:
+    branches:
       - main
-      
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -14,50 +14,36 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-    
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: 3.x
 
       - name: Install dependencies
-        run: pip install --upgrade pip
-      - name: Install dependencies
-        run: pip install selenium requests futures eventlet
-      - name: Install dependencies
-        run: pip install opencv-python requests
-      - name: Install dependencies
-        run: pip install Beautifulsoup4 requests
-      - name: Install dependencies
-        run: pip install translate requests
-      #- name: Install dependencies
-        #run: pip install ffmpy
-      - name: Install dependencies
-        run: pip install termcolor
-      - name: Install dependencies
-        run: pip install func_timeout
-      - name: Install dependencies
-        run: pip install replace
-      - name: Install dependencies
-        run: pip install input
-      - name: Install dependencies
-        run: pip install opencc
-      - name: Install dependencies
-        run: pip install pypinyin
-      - name: Install dependencies
-        run: pip install pytz 
-      - name: Install dependencies
-        run: pip install tqdm
+        run: |
+          pip install --upgrade pip
+          pip install selenium requests futures eventlet
+          pip install opencv-python
+          pip install beautifulsoup4
+          pip install translate
+          #pip install ffmpy
+          pip install termcolor
+          pip install func_timeout
+          pip install replace
+          pip install input
+          pip install opencc
+          pip install pypinyin
+          pip install pytz 
+          pip install tqdm
 
       - name: Run iptv
-        run: python ${{ github.workspace }}/ZB.py      #这里更改要运行的py     
+        run: python ${{ github.workspace }}/ZB.py  # 更改为要运行的 py 文件
 
       - name: 提交更改
         run: |
           git config --local user.email "actions@126.com"
           git config --local user.name "GitHub Action"
-          git add .
-          git commit *.txt -m "Add generated file"
-          git commit *.m3u -m "Add generated file"
-          #git pull --rebase
-          git push -f
+          git add .  # 暂存所有更改的文件
+          git commit -m "Add generated files" || echo "没有需要提交的更改"  # 提交所有更改
+          git push -f  # 强制推送
