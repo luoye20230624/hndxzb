@@ -1,5 +1,5 @@
 #EXTM3U x-tvg-url="https://live.fanmingming.com/e.xml" catchup="append" catchup-source="?playseek=${(b)yyyyMMddHHmmss}-${(e)yyyyMMddHHmmss}"
-#EXTINF:-1 group-title="更新时间10-02 02:25",河南卫视
+#EXTINF:-1 group-title="更新时间10-02 08:58",河南卫视
 http://61.163.181.78:9901/tsfile/live/1034_1.m3u8?key=txiptv&playlive=1&authid=0
 #EXTINF:-1 tvg-id="CCTV1" tvg-name="CCTV1" tvg-logo="https://live.fanmingming.com/tv/CCTV1.png" group-title="央视频道",CCTV1
 http://118.248.73.112:4022/udp/239.76.246.151:1234
@@ -13,8 +13,6 @@ http://118.248.73.112:4022/udp/239.76.253.152:9000
 http://118.248.73.112:4022/udp/239.76.246.153:1234
 #EXTINF:-1 tvg-id="CCTV3" tvg-name="CCTV3" tvg-logo="https://live.fanmingming.com/tv/CCTV3.png" group-title="央视频道",CCTV3
 http://118.248.73.112:4022/udp/239.76.253.153:9000
-#EXTINF:-1 tvg-id="CCTV 4K" tvg-name="CCTV 4K" tvg-logo="https://live.fanmingming.com/tv/CCTV 4K.png" group-title="央视频道",CCTV 4K
-http://118.248.73.112:4022/udp/239.76.246.214:1234
 #EXTINF:-1 tvg-id="CCTV4" tvg-name="CCTV4" tvg-logo="https://live.fanmingming.com/tv/CCTV4.png" group-title="央视频道",CCTV4
 http://118.248.73.112:4022/udp/239.76.245.195:1234
 #EXTINF:-1 tvg-id="CCTV4" tvg-name="CCTV4" tvg-logo="https://live.fanmingming.com/tv/CCTV4.png" group-title="央视频道",CCTV4
@@ -67,8 +65,6 @@ http://118.248.73.112:4022/udp/239.76.253.164:9000
 http://118.248.73.112:4022/udp/239.76.245.252:1234
 #EXTINF:-1 tvg-id="CCTV16 4K" tvg-name="CCTV16 4K" tvg-logo="https://live.fanmingming.com/tv/CCTV16 4K.png" group-title="央视频道",CCTV16 4K
 http://118.248.73.112:4022/udp/239.76.254.200:9000
-#EXTINF:-1 tvg-id="CCTV16 4k" tvg-name="CCTV16 4k" tvg-logo="https://live.fanmingming.com/tv/CCTV16 4k.png" group-title="央视频道",CCTV16 4k
-http://118.248.73.112:4022/udp/239.76.246.230:1234
 #EXTINF:-1 tvg-id="CCTV16" tvg-name="CCTV16" tvg-logo="https://live.fanmingming.com/tv/CCTV16.png" group-title="央视频道",CCTV16
 http://118.248.73.112:4022/udp/239.76.246.98:1234
 #EXTINF:-1 tvg-id="CCTV16" tvg-name="CCTV16" tvg-logo="https://live.fanmingming.com/tv/CCTV16.png" group-title="央视频道",CCTV16
@@ -115,6 +111,8 @@ http://118.248.73.112:4022/udp/239.76.252.190:9000
 http://118.248.73.112:4022/udp/239.76.246.186:1234
 #EXTINF:-1 tvg-id="东方卫视" tvg-name="东方卫视" tvg-logo="https://live.fanmingming.com/tv/东方卫视.png" group-title="卫视频道",东方卫视
 http://118.248.73.112:4022/udp/239.76.253.186:9000
+#EXTINF:-1 tvg-id="云南卫视" tvg-name="云南卫视" tvg-logo="https://live.fanmingming.com/tv/云南卫视.png" group-title="卫视频道",云南卫视
+http://118.248.73.112:4022/udp/239.76.254.60:9000
 #EXTINF:-1 tvg-id="凤凰中文" tvg-name="凤凰中文" tvg-logo="https://live.fanmingming.com/tv/凤凰中文.png" group-title="卫视频道",凤凰中文
 http://118.248.73.112:4022/udp/239.76.246.134:1234
 #EXTINF:-1 tvg-id="凤凰中文" tvg-name="凤凰中文" tvg-logo="https://live.fanmingming.com/tv/凤凰中文.png" group-title="卫视频道",凤凰中文
@@ -280,8 +278,6 @@ http://118.248.73.112:4022/udp/239.76.255.30:9000
 #EXTINF:-1 tvg-id="湖南公共" tvg-name="湖南公共" tvg-logo="https://live.fanmingming.com/tv/湖南公共.png" group-title="湖南频道",湖南公共
 http://118.248.73.112:4022/udp/239.76.245.123:1234
 #EXTINF:-1 tvg-id="湖南公共" tvg-name="湖南公共" tvg-logo="https://live.fanmingming.com/tv/湖南公共.png" group-title="湖南频道",湖南公共
-http://118.248.73.112:4022/udp/239.76.246.109:1234
-#EXTINF:-1 tvg-id="湖南公共" tvg-name="湖南公共" tvg-logo="https://live.fanmingming.com/tv/湖南公共.png" group-title="湖南频道",湖南公共
 http://118.248.73.112:4022/udp/239.76.252.123:9000
 #EXTINF:-1 tvg-id="湖南公共" tvg-name="湖南公共" tvg-logo="https://live.fanmingming.com/tv/湖南公共.png" group-title="湖南频道",湖南公共
 http://118.248.73.112:4022/udp/239.76.253.109:9000
@@ -329,6 +325,24 @@ http://118.248.73.112:4022/udp/239.76.253.106:9000
 http://118.248.73.112:4022/udp/239.76.245.118:1234
 #EXTINF:-1 tvg-id="湖南电视剧" tvg-name="湖南电视剧" tvg-logo="https://live.fanmingming.com/tv/湖南电视剧.png" group-title="湖南频道",湖南电视剧
 http://118.248.73.112:4022/udp/239.76.246.108:1234
+#EXTINF:-1 tvg-id="湖南电视剧" tvg-name="湖南电视剧" tvg-logo="https://live.fanmingming.com/tv/湖南电视剧.png" group-title="湖南频道",湖南电视剧
+http://118.248.73.112:4022/udp/239.76.252.118:9000
+#EXTINF:-1 tvg-id="湖南电视剧" tvg-name="湖南电视剧" tvg-logo="https://live.fanmingming.com/tv/湖南电视剧.png" group-title="湖南频道",湖南电视剧
+http://118.248.73.112:4022/udp/239.76.253.108:9000
+#EXTINF:-1 tvg-id="湖南经视" tvg-name="湖南经视" tvg-logo="https://live.fanmingming.com/tv/湖南经视.png" group-title="湖南频道",湖南经视
+http://118.248.73.112:4022/udp/239.76.245.116:1234
+#EXTINF:-1 tvg-id="湖南经视" tvg-name="湖南经视" tvg-logo="https://live.fanmingming.com/tv/湖南经视.png" group-title="湖南频道",湖南经视
+http://118.248.73.112:4022/udp/239.76.246.103:1234
+#EXTINF:-1 tvg-id="湖南经视" tvg-name="湖南经视" tvg-logo="https://live.fanmingming.com/tv/湖南经视.png" group-title="湖南频道",湖南经视
+http://118.248.73.112:4022/udp/239.76.252.116:9000
+#EXTINF:-1 tvg-id="湖南经视" tvg-name="湖南经视" tvg-logo="https://live.fanmingming.com/tv/湖南经视.png" group-title="湖南频道",湖南经视
+http://118.248.73.112:4022/udp/239.76.253.103:9000
+#EXTINF:-1 tvg-id="湖南都市" tvg-name="湖南都市" tvg-logo="https://live.fanmingming.com/tv/湖南都市.png" group-title="湖南频道",湖南都市
+http://118.248.73.112:4022/udp/239.76.245.117:1234
+#EXTINF:-1 tvg-id="湖南都市" tvg-name="湖南都市" tvg-logo="https://live.fanmingming.com/tv/湖南都市.png" group-title="湖南频道",湖南都市
+http://118.248.73.112:4022/udp/239.76.246.104:1234
+#EXTINF:-1 tvg-id="湖南都市" tvg-name="湖南都市" tvg-logo="https://live.fanmingming.com/tv/湖南都市.png" group-title="湖南频道",湖南都市
+http://118.248.73.112:4022/udp/239.76.252.117:9000
 #EXTINF:-1 tvg-id="湖南都市" tvg-name="湖南都市" tvg-logo="https://live.fanmingming.com/tv/湖南都市.png" group-title="湖南频道",湖南都市
 http://118.248.73.112:4022/udp/239.76.253.104:9000
 #EXTINF:-1 tvg-id="湘潭综合" tvg-name="湘潭综合" tvg-logo="https://live.fanmingming.com/tv/湘潭综合.png" group-title="湖南频道",湘潭综合
@@ -401,21 +415,5 @@ http://118.248.73.112:4022/udp/239.76.253.122:9000
 http://118.248.73.112:4022/udp/239.76.246.121:1234
 #EXTINF:-1 tvg-id="长沙新闻" tvg-name="长沙新闻" tvg-logo="https://live.fanmingming.com/tv/长沙新闻.png" group-title="湖南频道",长沙新闻
 http://118.248.73.112:4022/udp/239.76.253.121:9000
-#EXTINF:-1 tvg-id="湖南都市" tvg-name="湖南都市" tvg-logo="https://live.fanmingming.com/tv/湖南都市.png" group-title="湖南频道",湖南都市
-http://118.248.73.112:4022/udp/239.76.245.117:1234
-#EXTINF:-1 tvg-id="湖南都市" tvg-name="湖南都市" tvg-logo="https://live.fanmingming.com/tv/湖南都市.png" group-title="湖南频道",湖南都市
-http://118.248.73.112:4022/udp/239.76.252.117:9000
-#EXTINF:-1 tvg-id="湖南电视剧" tvg-name="湖南电视剧" tvg-logo="https://live.fanmingming.com/tv/湖南电视剧.png" group-title="湖南频道",湖南电视剧
-http://118.248.73.112:4022/udp/239.76.253.108:9000
-#EXTINF:-1 tvg-id="湖南经视" tvg-name="湖南经视" tvg-logo="https://live.fanmingming.com/tv/湖南经视.png" group-title="湖南频道",湖南经视
-http://118.248.73.112:4022/udp/239.76.246.103:1234
-#EXTINF:-1 tvg-id="湖南经视" tvg-name="湖南经视" tvg-logo="https://live.fanmingming.com/tv/湖南经视.png" group-title="湖南频道",湖南经视
-http://118.248.73.112:4022/udp/239.76.253.103:9000
-#EXTINF:-1 tvg-id="湖南电视剧" tvg-name="湖南电视剧" tvg-logo="https://live.fanmingming.com/tv/湖南电视剧.png" group-title="湖南频道",湖南电视剧
-http://118.248.73.112:4022/udp/239.76.252.118:9000
-#EXTINF:-1 tvg-id="湖南经视" tvg-name="湖南经视" tvg-logo="https://live.fanmingming.com/tv/湖南经视.png" group-title="湖南频道",湖南经视
-http://118.248.73.112:4022/udp/239.76.252.116:9000
-#EXTINF:-1 tvg-id="湖南经视" tvg-name="湖南经视" tvg-logo="https://live.fanmingming.com/tv/湖南经视.png" group-title="湖南频道",湖南经视
-http://118.248.73.112:4022/udp/239.76.245.116:1234
-#EXTINF:-1 tvg-id="湖南都市" tvg-name="湖南都市" tvg-logo="https://live.fanmingming.com/tv/湖南都市.png" group-title="湖南频道",湖南都市
-http://118.248.73.112:4022/udp/239.76.246.104:1234
+#EXTINF:-1 tvg-id="湖南公共" tvg-name="湖南公共" tvg-logo="https://live.fanmingming.com/tv/湖南公共.png" group-title="湖南频道",湖南公共
+http://118.248.73.112:4022/udp/239.76.246.109:1234
