@@ -1,13 +1,25 @@
 #EXTM3U x-tvg-url="https://live.fanmingming.com/e.xml" catchup="append" catchup-source="?playseek=${(b)yyyyMMddHHmmss}-${(e)yyyyMMddHHmmss}"
-#EXTINF:-1 group-title="更新时间10-14 20:58",河南卫视
+#EXTINF:-1 group-title="更新时间10-15 03:14",河南卫视
 http://61.163.181.78:9901/tsfile/live/1034_1.m3u8?key=txiptv&playlive=1&authid=0
+#EXTINF:-1 tvg-id="CCTV1" tvg-name="CCTV1" tvg-logo="https://live.fanmingming.com/tv/CCTV1.png" group-title="央视频道",CCTV1
+http://118.248.73.112:4022/udp/239.76.253.151:9000
+#EXTINF:-1 tvg-id="CCTV1" tvg-name="CCTV1" tvg-logo="https://live.fanmingming.com/tv/CCTV1.png" group-title="央视频道",CCTV1
+http://118.248.73.112:4022/udp/239.76.246.151:1234
+#EXTINF:-1 tvg-id="CCTV 4K" tvg-name="CCTV 4K" tvg-logo="https://live.fanmingming.com/tv/CCTV 4K.png" group-title="央视频道",CCTV 4K
+http://118.248.73.112:4022/udp/239.76.246.214:1234
+#EXTINF:-1 tvg-id="CCTV4" tvg-name="CCTV4" tvg-logo="https://live.fanmingming.com/tv/CCTV4.png" group-title="央视频道",CCTV4
+http://118.248.172.161:8888/udp/239.76.253.154:9000
 #EXTINF:-1 tvg-id="CCTV6" tvg-name="CCTV6" tvg-logo="https://live.fanmingming.com/tv/CCTV6.png" group-title="央视频道",CCTV6
-http://118.248.172.161:8888/udp/239.76.246.156:1234
-#EXTINF:-1 tvg-id="CCTV7" tvg-name="CCTV7" tvg-logo="https://live.fanmingming.com/tv/CCTV7.png" group-title="央视频道",CCTV7
-http://118.248.172.161:8888/udp/239.76.253.157:9000
-#EXTINF:-1 tvg-id="CCTV风云足球" tvg-name="CCTV风云足球" tvg-logo="https://live.fanmingming.com/tv/CCTV风云足球.png" group-title="央视频道",CCTV风云足球
-http://118.248.172.161:8888/udp/239.76.254.52:9000
-#EXTINF:-1 tvg-id="CHC高清电影" tvg-name="CHC高清电影" tvg-logo="https://live.fanmingming.com/tv/CHC高清电影.png" group-title="卫视频道",CHC高清电影
-http://118.248.172.161:8888/udp/239.76.245.242:1234
-#EXTINF:-1 tvg-id="凤凰资讯" tvg-name="凤凰资讯" tvg-logo="https://live.fanmingming.com/tv/凤凰资讯.png" group-title="卫视频道",凤凰资讯
-http://118.248.172.161:8888/udp/239.76.253.134:9000
+http://118.248.73.112:4022/udp/239.76.246.156:1234
+#EXTINF:-1 tvg-id="CCTV兵器科技" tvg-name="CCTV兵器科技" tvg-logo="https://live.fanmingming.com/tv/CCTV兵器科技.png" group-title="央视频道",CCTV兵器科技
+http://118.248.73.112:4022/udp/239.76.254.59:9000
+#EXTINF:-1 tvg-id="CCTV第一剧场" tvg-name="CCTV第一剧场" tvg-logo="https://live.fanmingming.com/tv/CCTV第一剧场.png" group-title="央视频道",CCTV第一剧场
+http://118.248.73.112:4022/udp/239.76.254.49:9000
+#EXTINF:-1 tvg-id="河北卫视" tvg-name="河北卫视" tvg-logo="https://live.fanmingming.com/tv/河北卫视.png" group-title="卫视频道",河北卫视
+http://118.248.172.161:8888/udp/239.76.245.199:1234
+#EXTINF:-1 tvg-id="溆浦综合" tvg-name="溆浦综合" tvg-logo="https://live.fanmingming.com/tv/溆浦综合.png" group-title="湖南频道",溆浦综合
+http://118.248.172.161:8888/udp/239.76.255.25:9000
+#EXTINF:-1 tvg-id="益阳公共" tvg-name="益阳公共" tvg-logo="https://live.fanmingming.com/tv/益阳公共.png" group-title="湖南频道",益阳公共
+http://118.248.172.161:8888/udp/239.76.255.16:9000
+#EXTINF:-1 tvg-id="衡阳公共" tvg-name="衡阳公共" tvg-logo="https://live.fanmingming.com/tv/衡阳公共.png" group-title="湖南频道",衡阳公共
+http://118.248.172.161:8888/udp/239.76.255.14:9000
