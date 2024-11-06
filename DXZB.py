@@ -327,8 +327,8 @@ def txt_to_m3u(input_file, output_file):
     current_time = now.strftime("%m-%d %H:%M")
     with open(output_file, 'w', encoding='utf-8') as f:  
         f.write('#EXTM3U x-tvg-url="https://live.fanmingming.com/e.xml" catchup="append" catchup-source="?playseek=${(b)yyyyMMddHHmmss}-${(e)yyyyMMddHHmmss}"\n')
-        f.write(f'#EXTINF:-1 group-title="更新时间{current_time}",河南卫视\n')    
-        f.write(f'http://61.163.181.78:9901/tsfile/live/1034_1.m3u8?key=txiptv&playlive=1&authid=0\n')    
+        f.write(f'#EXTINF:-1 group-title="更新时间{current_time}",湖南卫视\n')    
+        f.write(f'http://222.243.28.152:9901/tsfile/live/0128_1.m3u8\n')    
         # 初始化genre变量
         genre = ''
         # 遍历txt文件内容
