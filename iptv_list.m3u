@@ -1,3 +1,73 @@
 #EXTM3U x-tvg-url="https://live.fanmingming.com/e.xml" catchup="append" catchup-source="?playseek=${(b)yyyyMMddHHmmss}-${(e)yyyyMMddHHmmss}"
-#EXTINF:-1 group-title="更新时间11-19 08:49",湖南卫视
+#EXTINF:-1 group-title="更新时间11-19 15:07",湖南卫视
 http://222.243.28.152:9901/tsfile/live/0128_1.m3u8
+#EXTINF:-1 tvg-id="CCTV1" tvg-name="CCTV1" tvg-logo="https://live.fanmingming.com/tv/CCTV1.png" group-title="央视频道",CCTV1
+http://118.248.73.112:4022/udp/239.76.253.151:9000
+#EXTINF:-1 tvg-id="CCTV2" tvg-name="CCTV2" tvg-logo="https://live.fanmingming.com/tv/CCTV2.png" group-title="央视频道",CCTV2
+http://118.248.73.112:4022/udp/239.76.253.152:9000
+#EXTINF:-1 tvg-id="CCTV4" tvg-name="CCTV4" tvg-logo="https://live.fanmingming.com/tv/CCTV4.png" group-title="央视频道",CCTV4
+http://118.248.73.112:4022/udp/239.76.245.195:1234
+#EXTINF:-1 tvg-id="CCTV4" tvg-name="CCTV4" tvg-logo="https://live.fanmingming.com/tv/CCTV4.png" group-title="央视频道",CCTV4
+http://118.248.73.112:4022/udp/239.76.246.154:1234
+#EXTINF:-1 tvg-id="CCTV 4K" tvg-name="CCTV 4K" tvg-logo="https://live.fanmingming.com/tv/CCTV 4K.png" group-title="央视频道",CCTV 4K
+http://118.248.73.112:4022/udp/239.76.254.101:9000
+#EXTINF:-1 tvg-id="CCTV5" tvg-name="CCTV5" tvg-logo="https://live.fanmingming.com/tv/CCTV5.png" group-title="央视频道",CCTV5
+http://118.248.172.161:8888/udp/239.76.253.155:9000
+#EXTINF:-1 tvg-id="CCTV11" tvg-name="CCTV11" tvg-logo="https://live.fanmingming.com/tv/CCTV11.png" group-title="央视频道",CCTV11
+http://118.248.73.112:4022/udp/239.76.245.251:1234
+#EXTINF:-1 tvg-id="CCTV兵器科技" tvg-name="CCTV兵器科技" tvg-logo="https://live.fanmingming.com/tv/CCTV兵器科技.png" group-title="央视频道",CCTV兵器科技
+http://118.248.73.112:4022/udp/239.76.254.59:9000
+#EXTINF:-1 tvg-id="CCTV央视高尔夫" tvg-name="CCTV央视高尔夫" tvg-logo="https://live.fanmingming.com/tv/CCTV央视高尔夫.png" group-title="央视频道",CCTV央视高尔夫
+http://118.248.73.112:4022/udp/239.76.254.62:9000
+#EXTINF:-1 tvg-id="CCTV女姓时尚" tvg-name="CCTV女姓时尚" tvg-logo="https://live.fanmingming.com/tv/CCTV女姓时尚.png" group-title="央视频道",CCTV女姓时尚
+http://118.248.73.112:4022/udp/239.76.254.55:9000
+#EXTINF:-1 tvg-id="CCTV怀旧剧场" tvg-name="CCTV怀旧剧场" tvg-logo="https://live.fanmingming.com/tv/CCTV怀旧剧场.png" group-title="央视频道",CCTV怀旧剧场
+http://118.248.73.112:4022/udp/239.76.254.53:9000
+#EXTINF:-1 tvg-id="CHC家庭影院" tvg-name="CHC家庭影院" tvg-logo="https://live.fanmingming.com/tv/CHC家庭影院.png" group-title="卫视频道",CHC家庭影院
+http://118.248.73.112:4022/udp/239.76.245.241:1234
+#EXTINF:-1 tvg-id="北京卫视" tvg-name="北京卫视" tvg-logo="https://live.fanmingming.com/tv/北京卫视.png" group-title="卫视频道",北京卫视
+http://118.248.172.161:8888/udp/239.76.246.184:1234
+#EXTINF:-1 tvg-id="北京卫视" tvg-name="北京卫视" tvg-logo="https://live.fanmingming.com/tv/北京卫视.png" group-title="卫视频道",北京卫视
+http://118.248.172.161:8888/udp/239.76.253.184:9000
+#EXTINF:-1 tvg-id="吉林卫视" tvg-name="吉林卫视" tvg-logo="https://live.fanmingming.com/tv/吉林卫视.png" group-title="卫视频道",吉林卫视
+http://118.248.172.161:8888/udp/239.76.246.201:1234
+#EXTINF:-1 tvg-id="吉林卫视" tvg-name="吉林卫视" tvg-logo="https://live.fanmingming.com/tv/吉林卫视.png" group-title="卫视频道",吉林卫视
+http://118.248.172.161:8888/udp/239.76.253.201:9000
+#EXTINF:-1 tvg-id="四川卫视" tvg-name="四川卫视" tvg-logo="https://live.fanmingming.com/tv/四川卫视.png" group-title="卫视频道",四川卫视
+http://118.248.172.161:8888/udp/239.76.246.91:1234
+#EXTINF:-1 tvg-id="四川卫视" tvg-name="四川卫视" tvg-logo="https://live.fanmingming.com/tv/四川卫视.png" group-title="卫视频道",四川卫视
+http://118.248.172.161:8888/udp/239.76.253.91:9000
+#EXTINF:-1 tvg-id="天津卫视" tvg-name="天津卫视" tvg-logo="https://live.fanmingming.com/tv/天津卫视.png" group-title="卫视频道",天津卫视
+http://118.248.172.161:8888/udp/239.76.246.185:1234
+#EXTINF:-1 tvg-id="天津卫视" tvg-name="天津卫视" tvg-logo="https://live.fanmingming.com/tv/天津卫视.png" group-title="卫视频道",天津卫视
+http://118.248.172.161:8888/udp/239.76.253.185:9000
+#EXTINF:-1 tvg-id="安徽卫视" tvg-name="安徽卫视" tvg-logo="https://live.fanmingming.com/tv/安徽卫视.png" group-title="卫视频道",安徽卫视
+http://118.248.172.161:8888/udp/239.76.245.196:1234
+#EXTINF:-1 tvg-id="安徽卫视" tvg-name="安徽卫视" tvg-logo="https://live.fanmingming.com/tv/安徽卫视.png" group-title="卫视频道",安徽卫视
+http://118.248.172.161:8888/udp/239.76.252.196:9000
+#EXTINF:-1 tvg-id="山东卫视" tvg-name="山东卫视" tvg-logo="https://live.fanmingming.com/tv/山东卫视.png" group-title="卫视频道",山东卫视
+http://118.248.172.161:8888/udp/239.76.246.195:1234
+#EXTINF:-1 tvg-id="山东卫视" tvg-name="山东卫视" tvg-logo="https://live.fanmingming.com/tv/山东卫视.png" group-title="卫视频道",山东卫视
+http://118.248.172.161:8888/udp/239.76.253.195:9000
+#EXTINF:-1 tvg-id="凤凰资讯" tvg-name="凤凰资讯" tvg-logo="https://live.fanmingming.com/tv/凤凰资讯.png" group-title="卫视频道",凤凰资讯
+http://118.248.172.161:8888/udp/239.76.246.135:1234
+#EXTINF:-1 tvg-id="河北卫视" tvg-name="河北卫视" tvg-logo="https://live.fanmingming.com/tv/河北卫视.png" group-title="卫视频道",河北卫视
+http://118.248.172.161:8888/udp/239.76.245.199:1234
+#EXTINF:-1 tvg-id="浙江卫视" tvg-name="浙江卫视" tvg-logo="https://live.fanmingming.com/tv/浙江卫视.png" group-title="卫视频道",浙江卫视
+http://118.248.73.112:4022/udp/239.76.253.182:9000
+#EXTINF:-1 tvg-id="深圳卫视" tvg-name="深圳卫视" tvg-logo="https://live.fanmingming.com/tv/深圳卫视.png" group-title="卫视频道",深圳卫视
+http://118.248.172.161:8888/udp/239.76.246.188:1234
+#EXTINF:-1 tvg-id="娄底公共" tvg-name="娄底公共" tvg-logo="https://live.fanmingming.com/tv/娄底公共.png" group-title="湖南频道",娄底公共
+http://118.248.172.161:8888/udp/239.76.248.19:1234
+#EXTINF:-1 tvg-id="娄底公共" tvg-name="娄底公共" tvg-logo="https://live.fanmingming.com/tv/娄底公共.png" group-title="湖南频道",娄底公共
+http://118.248.172.161:8888/udp/239.76.255.19:9000
+#EXTINF:-1 tvg-id="娄底教育" tvg-name="娄底教育" tvg-logo="https://live.fanmingming.com/tv/娄底教育.png" group-title="湖南频道",娄底教育
+http://118.248.172.161:8888/udp/239.76.255.20:9000
+#EXTINF:-1 tvg-id="娄底综合" tvg-name="娄底综合" tvg-logo="https://live.fanmingming.com/tv/娄底综合.png" group-title="湖南频道",娄底综合
+http://118.248.172.161:8888/udp/239.76.248.18:1234
+#EXTINF:-1 tvg-id="娄底综合" tvg-name="娄底综合" tvg-logo="https://live.fanmingming.com/tv/娄底综合.png" group-title="湖南频道",娄底综合
+http://118.248.172.161:8888/udp/239.76.255.18:9000
+#EXTINF:-1 tvg-id="岳阳公共" tvg-name="岳阳公共" tvg-logo="https://live.fanmingming.com/tv/岳阳公共.png" group-title="湖南频道",岳阳公共
+http://118.248.172.161:8888/udp/239.76.255.8:9000
+#EXTINF:-1 tvg-id="株洲综合" tvg-name="株洲综合" tvg-logo="https://live.fanmingming.com/tv/株洲综合.png" group-title="湖南频道",株洲综合
+http://118.248.172.161:8888/udp/239.76.255.1:9000
