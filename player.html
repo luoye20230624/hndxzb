@@ -8,7 +8,15 @@
 <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,viewport-fit=cover">
 <meta http-equiv="Access-Control-Allow-Origin" content="*" />
 <title>Live网页播放器</title>
-<style type="text/css">body, html, .dplayer{padding: 0;margin: 0;width: 100%;height: 100%;text-align:center;background-color:#000;}.dplayer-info-panel-item-url,.dplayer-menu,.dplayer-mask{display:none!important}</style>
+<style type="text/css">
+body, html, .dplayer{padding: 0;margin: 0;width: 100%;height: 100%;text-align:center;background-color:#000;}
+.dplayer-info-panel-item-url,.dplayer-menu,.dplayer-mask{display:none!important}
+/* 自定义URL控件样式 */
+#urlControl {position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; background: rgba(0,0,0,0.7); padding: 12px; border-radius: 8px; backdrop-filter: blur(5px);}
+#customUrl {width: 400px; padding: 10px; margin-right: 12px; border: none; border-radius: 4px; background: #fff; color: #333; outline: none; font-size: 14px;}
+#loadUrl {padding: 10px 20px; background: #2c83fb; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: all 0.2s;}
+#loadUrl:hover {background: #1a73e8;}
+</style>
 <link rel="stylesheet" href="https://lib.baomitu.com/dplayer/1.25.0/DPlayer.min.css">
 <script type="text/javascript" src="https://lib.baomitu.com/flv.js/1.6.2/flv.min.js"></script>
 <script type="text/javascript" src="https://lib.baomitu.com/hls.js/1.4.10/hls.min.js"></script>
@@ -17,63 +25,86 @@
 <script type="text/javascript" src="https://lib.baomitu.com/Base64/1.3.0/base64.js" charset="UTF-8"></script>
 </head>
 <body oncontextmenu="return false" onselectstart="return false" style="overflow-y:hidden;">
-<div id="video" class="dplayer"></div>
-<script type="text/javascript">
-function _get(name){
-     var result = location.search.match(new RegExp("[\?\&]" + name+ "=([^\&]+)","i"));
-     if(result == null || result.length < 1){
-         return "";
-     }
-     return decodeURIComponent(result[1])
-}
-var webdata = {
-        set:function(key,val){
-            window.sessionStorage.setItem(key,val);
-        },
-        get:function(key){
-            return window.sessionStorage.getItem(key);
-        },
-        del:function(key){
-            window.sessionStorage.removeItem(key);
-        },
-        clear:function(key){
-            window.sessionStorage.clear();
+    <!-- 自定义URL输入控制区域 -->
+    <div id="urlControl">
+        <input type="text" id="customUrl" placeholder="请输入视频URL（支持FLV/HLS/MP4等）">
+        <button id="loadUrl">加载视频</button>
+    </div>
+
+    <!-- 视频播放器容器 -->
+    <div id="video" class="dplayer"></div>
+
+    <script type="text/javascript">
+        // URL参数解析函数
+        function _get(name){
+            var result = location.search.match(new RegExp("[\?\&]" + name+ "=([^\&]+)","i"));
+            if(result == null || result.length < 1) return "";
+            return decodeURIComponent(result[1])
         }
-    };
-function h2_remove(){
-         $('#h2_player_pause').remove();
-}
-function h2_pause(){
-  $('#video').before('<!--div id="h2_player_pause" style="position:absolute;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;width:100%;"><div style="z-index:10;width:30%;height:auto;"><img src="/tv/img/weixin.jpg" style="width:50%;height:auto;"></div></div--->');
-}
-var videoData = _get('url');
-var purl = atob(videoData);
-var pic = "/tv/img/load.gif";
-var dp = new DPlayer({
-    container: document.getElementById('video'),
-			autoplay: true,
-			live: true,
-			mutex: true,
-			video: {
-				url: purl,
-				type: 'auto',
-                pic: pic
-			       },
-			contextmenu:[{text:"鹦鹉台云播",link:"//v.zimtv.cn/"}]
-		});
-dp.on('pause', function () {
-       h2_pause();
-})
-  dp.on('play', function () {
-        h2_remove();
-});
-</script>
-<script>
-if($('.dplayer-setting').length > 0){
-$('.dplayer-setting').after("<div class='prism-time-display' style='float: left;'><img src='/tv/img/zimtv.png' style='margin-top: 10px;height:20px;'></div>");
-}
-</script>
 
+        // SessionStorage操作对象
+        var webdata = {
+            set:function(key,val){window.sessionStorage.setItem(key,val);},
+            get:function(key){return window.sessionStorage.getItem(key);},
+            del:function(key){window.sessionStorage.removeItem(key);},
+            clear:function(key){window.sessionStorage.clear();}
+        };
 
+        // 暂停遮罩控制函数
+        function h2_remove(){$('#h2_player_pause').remove();}
+        function h2_pause(){$('#video').before('<!--div id="h2_player_pause" style="position:absolute;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;width:100%;"><div style="z-index:10;width:30%;height:auto;"><img src="/tv/img/weixin.jpg" style="width:50%;height:auto;"></div></div--->');}
+
+        // 初始化播放器
+        var videoData = _get('url');
+        var purl = atob(videoData);
+        var pic = "/tv/img/load.gif";
+        var dp = new DPlayer({
+            container: document.getElementById('video'),
+            autoplay: true,
+            live: true,
+            mutex: true,
+            video: {url: purl,type: 'auto',pic: pic},
+            contextmenu:[{text:"鹦鹉台云播",link:"//v.zimtv.cn/"}]
+        });
+
+        // 自定义URL加载功能
+        document.getElementById('loadUrl').addEventListener('click', function() {
+            const customUrl = document.getElementById('customUrl').value.trim();
+            if (!customUrl) {
+                alert('请输入有效的视频URL');
+                return;
+            }
+            try {
+                // 切换视频源
+                dp.switchVideo({
+                    url: customUrl,
+                    type: 'auto',
+                    pic: pic
+                });
+                // 强制播放并清除遮罩
+                dp.play();
+                h2_remove();
+                // 清空输入框
+                document.getElementById('customUrl').value = '';
+            } catch (e) {
+                console.error('加载失败:', e);
+                alert('视频加载失败，请检查URL格式或网络连接');
+            }
+        });
+
+        // 回车触发加载
+        document.getElementById('customUrl').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') document.getElementById('loadUrl').click();
+        });
+
+        // 原播放器事件监听
+        dp.on('pause', function() {h2_pause();});
+        dp.on('play', function() {h2_remove();});
+
+        // 品牌标识添加
+        if($('.dplayer-setting').length > 0){
+            $('.dplayer-setting').after("<div class='prism-time-display' style='float: left;'><img src='/tv/img/zimtv.png' style='margin-top: 10px;height:20px;'></div>");
+        }
+    </script>
 </body>
 </html>
