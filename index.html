@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的网址导航 - 简约版</title>
+    <style>
+        /* 引入样式 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6; /* 浅灰色背景 */
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        /* 头部和搜索 */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #007bff; /* 蓝色主标题 */
+            margin-bottom: 10px;
+        }
+
+        .search-box {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .search-box input[type="text"] {
+            width: 60%;
+            max-width: 500px;
+            padding: 12px 20px;
+            border: 2px solid #007bff;
+            border-radius: 25px;
+            font-size: 1.1em;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .search-box input[type="text"]:focus {
+            border-color: #0056b3;
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
+        }
+
+        /* 网站链接部分 */
+        .category {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #fff; /* 白色卡片背景 */
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* 轻微阴影 */
+        }
+
+        .category h2 {
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            color: #495057; /* 深灰色副标题 */
+            font-size: 1.5em;
+        }
+
+        .link-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px; /* 链接之间的间距 */
+        }
+
+        .link-item a {
+            display: block;
+            padding: 10px 15px;
+            border-radius: 8px;
+            background-color: #f8f9fa; /* 链接背景色 */
+            color: #007bff; /* 链接文字颜色 */
+            text-decoration: none; /* 去掉下划线 */
+            transition: background-color 0.2s, transform 0.2s;
+            font-weight: 500;
+        }
+
+        .link-item a:hover {
+            background-color: #e9ecef; /* 鼠标悬停变色 */
+            color: #0056b3;
+            transform: translateY(-2px); /* 轻微上浮效果 */
+        }
+
+        /* 底部 */
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <header>
+            <h1>🌟 极简网址导航</h1>
+            <p>快速访问您最常用的网站</p>
+            
+            <form class="search-box" action="https://www.baidu.com/s" target="_blank" method="get">
+                <input type="text" name="wd" placeholder="输入关键词，按回车搜索 (百度)" required>
+            </form>
+        </header>
+
+        <div class="category">
+            <h2>⚙️ 常用工具</h2>
+            <div class="link-grid">
+                <div class="link-item"><a href="https://www.google.com/" target="_blank">Google 搜索</a></div>
+                <div class="link-item"><a href="https://www.deepl.com/" target="_blank">DeepL 翻译</a></div>
+                <div class="link-item"><a href="https://www.remove.bg/" target="_blank">图片去背景</a></div>
+                <div class="link-item"><a href="https://code.visualstudio.com/" target="_blank">VS Code</a></div>
+            </div>
+        </div>
+
+        <div class="category">
+            <h2>📚 学习与开发</h2>
+            <div class="link-grid">
+                <div class="link-item"><a href="https://github.com/" target="_blank">GitHub</a></div>
+                <div class="link-item"><a href="https://stackoverflow.com/" target="_blank">Stack Overflow</a></div>
+                <div class="link-item"><a href="https://www.bilibili.com/" target="_blank">Bilibili</a></div>
+                <div class="link-item"><a href="https://developer.mozilla.org/zh-CN/" target="_blank">MDN Web 文档</a></div>
+            </div>
+        </div>
+
+        <div class="category">
+            <h2>🎬 娱乐影音</h2>
+            <div class="link-grid">
+                <div class="link-item"><a href="https://www.youtube.com/" target="_blank">YouTube</a></div>
+                <div class="link-item"><a href="https://www.netflix.com/" target="_blank">Netflix</a></div>
+                <div class="link-item"><a href="https://www.spotify.com/" target="_blank">Spotify</a></div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>&copy; 2025 我的网址导航. 设计简洁，方便快捷。</p>
+    </footer>
+
+</body>
+</html>
